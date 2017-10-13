@@ -36,7 +36,7 @@ install:
          #curl -fo /usr/local/bin/sccache https://path/to/linux/sccache && chmod +x /usr/local/bin/sccache
          ;;
        osx)
-          brew install awscli && aws s3 ls s3://rusotobinaries
+          brew update && brew install awscli && aws s3 ls s3://rusotobinaries
          # curl -fo /usr/local/bin/sccache https://path/to/osx/sccache && chmod +x /usr/local/bin/sccache
          ;;
      esac
