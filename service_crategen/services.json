@@ -305,6 +305,12 @@
     "protocolVersion": "2015-05-28",
     "baseTypeName": "Iot"
   },
+  "iot-data": {
+    "version": "0.28.0",
+    "coreVersion": "0.28.0",
+    "protocolVersion": "2015-05-28",
+    "baseTypeName": "IotData"
+  },
   "kinesis": {
     "version": "0.28.0",
     "coreVersion": "0.28.0",

@@ -215,6 +215,10 @@ path = "../rusoto/services/inspector"
 optional = true
 path = "../rusoto/services/iot"
 
+[dependencies.rusoto_iot_data]
+optional = true
+path = "../rusoto/services/iot-data"
+
 [dependencies.rusoto_kinesis]
 optional = true
 path = "../rusoto/services/kinesis"
@@ -418,6 +422,7 @@ all = [
 	   	"importexport",
 	   	"inspector",
 	   	"iot",
+		"iotdata",
 	   	"kinesis",
 		"kinesisanalytics",
 	   	"kms",
@@ -505,6 +510,7 @@ iam = ["rusoto_iam"]
 importexport = ["rusoto_importexport"]
 inspector = ["rusoto_inspector"]
 iot = ["rusoto_iot"]
+iotdata = ["rusoto_iot_data"]
 kinesis = ["rusoto_kinesis"]
 kinesisanalytics = ["rusoto_kinesisanalytics"]
 kms = ["rusoto_kms"]
