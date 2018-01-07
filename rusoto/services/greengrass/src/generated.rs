@@ -208,7 +208,7 @@ pub struct CreateDeploymentRequest {
     #[serde(rename = "DeploymentId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deployment_id: Option<String>,
-    /// Type of deployment
+    /// Type of deployment. When used in CreateDeployment, only NewDeployment and Redeployment are valid.
     #[serde(rename = "DeploymentType")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deployment_type: Option<String>,
@@ -223,11 +223,11 @@ pub struct CreateDeploymentRequest {
 
 #[derive(Default, Debug, Clone, Deserialize)]
 pub struct CreateDeploymentResponse {
-    /// Arn of the deployment.
+    /// The arn of the deployment.
     #[serde(rename = "DeploymentArn")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deployment_arn: Option<String>,
-    /// Id of the deployment.
+    /// The id of the deployment.
     #[serde(rename = "DeploymentId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deployment_id: Option<String>,
@@ -488,10 +488,14 @@ pub struct CreateGroupVersionRequest {
     /// The unique Id of the AWS Greengrass Group
     #[serde(rename = "GroupId")]
     pub group_id: String,
-    /// Logger definitionv ersion arn for this group.
+    /// Logger definition version arn for this group.
     #[serde(rename = "LoggerDefinitionVersionArn")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub logger_definition_version_arn: Option<String>,
+    /// Resource definition version arn for this group.
+    #[serde(rename = "ResourceDefinitionVersionArn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource_definition_version_arn: Option<String>,
     /// Subscription definition version arn for this group.
     #[serde(rename = "SubscriptionDefinitionVersionArn")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -599,6 +603,127 @@ pub struct CreateLoggerDefinitionVersionResponse {
     #[serde(rename = "Version")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct CreateResourceDefinitionRequest {
+    /// The client token used to request idempotent operations.
+    #[serde(rename = "AmznClientToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub amzn_client_token: Option<String>,
+    /// Information on the initial version
+    #[serde(rename = "InitialVersion")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initial_version: Option<ResourceDefinitionVersion>,
+    /// Name of the resource definition
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct CreateResourceDefinitionResponse {
+    /// Arn of the definition.
+    #[serde(rename = "Arn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arn: Option<String>,
+    /// Timestamp of when the definition was created.
+    #[serde(rename = "CreationTimestamp")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub creation_timestamp: Option<String>,
+    /// Id of the definition.
+    #[serde(rename = "Id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Last updated timestamp of the definition.
+    #[serde(rename = "LastUpdatedTimestamp")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_updated_timestamp: Option<String>,
+    /// Last version of the definition.
+    #[serde(rename = "LatestVersion")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_version: Option<String>,
+    /// Latest version arn of the definition.
+    #[serde(rename = "LatestVersionArn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_version_arn: Option<String>,
+    /// Name of the definition.
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct CreateResourceDefinitionVersionRequest {
+    /// The client token used to request idempotent operations.
+    #[serde(rename = "AmznClientToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub amzn_client_token: Option<String>,
+    /// Resource definition Id.
+    #[serde(rename = "ResourceDefinitionId")]
+    pub resource_definition_id: String,
+    /// List of resources.
+    #[serde(rename = "Resources")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resources: Option<Vec<Resource>>,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct CreateResourceDefinitionVersionResponse {
+    /// Arn of the version.
+    #[serde(rename = "Arn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arn: Option<String>,
+    /// Timestamp of when the version was created.
+    #[serde(rename = "CreationTimestamp")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub creation_timestamp: Option<String>,
+    /// Id of the resource container.
+    #[serde(rename = "Id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Unique Id of a version.
+    #[serde(rename = "Version")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct CreateSoftwareUpdateJobRequest {
+    /// The client token used to request idempotent operations.
+    #[serde(rename = "AmznClientToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub amzn_client_token: Option<String>,
+    #[serde(rename = "S3UrlSignerRole")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub s3_url_signer_role: Option<String>,
+    #[serde(rename = "SoftwareToUpdate")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub software_to_update: Option<String>,
+    #[serde(rename = "UpdateAgentLogLevel")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub update_agent_log_level: Option<String>,
+    #[serde(rename = "UpdateTargets")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub update_targets: Option<Vec<String>>,
+    #[serde(rename = "UpdateTargetsArchitecture")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub update_targets_architecture: Option<String>,
+    #[serde(rename = "UpdateTargetsOperatingSystem")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub update_targets_operating_system: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct CreateSoftwareUpdateJobResponse {
+    /// The Iot Job Arn corresponding to this update.
+    #[serde(rename = "IotJobArn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub iot_job_arn: Option<String>,
+    /// The Iot Job Id corresponding to this update.
+    #[serde(rename = "IotJobId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub iot_job_id: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, Serialize)]
@@ -768,6 +893,16 @@ pub struct DeleteLoggerDefinitionRequest {
 pub struct DeleteLoggerDefinitionResponse;
 
 #[derive(Default, Debug, Clone, Serialize)]
+pub struct DeleteResourceDefinitionRequest {
+    /// Resource definition Id.
+    #[serde(rename = "ResourceDefinitionId")]
+    pub resource_definition_id: String,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct DeleteResourceDefinitionResponse;
+
+#[derive(Default, Debug, Clone, Serialize)]
 pub struct DeleteSubscriptionDefinitionRequest {
     /// subscription definition Id
     #[serde(rename = "SubscriptionDefinitionId")]
@@ -792,6 +927,10 @@ pub struct Deployment {
     #[serde(rename = "DeploymentId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deployment_id: Option<String>,
+    /// The type of deployment.
+    #[serde(rename = "DeploymentType")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deployment_type: Option<String>,
     /// Arn of the group for this deployment.
     #[serde(rename = "GroupArn")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -859,11 +998,15 @@ pub struct DisassociateServiceRoleFromAccountResponse {
 pub struct Empty;
 
 /// ErrorDetail
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Deserialize)]
 pub struct ErrorDetail {
     /// Detailed Error Code
+    #[serde(rename = "DetailedErrorCode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub detailed_error_code: Option<String>,
     /// Detailed Error Message
+    #[serde(rename = "DetailedErrorMessage")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub detailed_error_message: Option<String>,
 }
 
@@ -916,6 +1059,14 @@ pub struct FunctionConfiguration {
 /// Environment of the function configuration
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct FunctionConfigurationEnvironment {
+    /// Flag to allow lambda access sys filesystem.
+    #[serde(rename = "AccessSysfs")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub access_sysfs: Option<bool>,
+    /// Policies for the function to access resources.
+    #[serde(rename = "ResourceAccessPolicies")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource_access_policies: Option<Vec<ResourceAccessPolicy>>,
     /// Environment variables for the lambda function.
     #[serde(rename = "Variables")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -936,7 +1087,7 @@ pub struct FunctionDefinitionVersion {
 pub struct GeneralError {
     /// Error Details
     pub error_details: Option<Vec<ErrorDetail>>,
-    /// Message
+    /// Message containing information about the error
     pub message: Option<String>,
 }
 
@@ -968,7 +1119,7 @@ pub struct GetConnectivityInfoRequest {
 
 #[derive(Default, Debug, Clone, Deserialize)]
 pub struct GetConnectivityInfoResponse {
-    /// Connectivity info array
+    /// Connectivity info list
     #[serde(rename = "ConnectivityInfo")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connectivity_info: Option<Vec<ConnectivityInfo>>,
@@ -1067,6 +1218,14 @@ pub struct GetDeploymentStatusResponse {
     #[serde(rename = "DeploymentStatus")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deployment_status: Option<String>,
+    /// The type of the deployment.
+    #[serde(rename = "DeploymentType")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deployment_type: Option<String>,
+    /// The error Details
+    #[serde(rename = "ErrorDetails")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error_details: Option<Vec<ErrorDetail>>,
     /// Error Message
     #[serde(rename = "ErrorMessage")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1209,6 +1368,7 @@ pub struct GetFunctionDefinitionVersionResponse {
     #[serde(rename = "CreationTimestamp")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub creation_timestamp: Option<String>,
+    /// Information on the definition
     #[serde(rename = "Definition")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub definition: Option<FunctionDefinitionVersion>,
@@ -1418,6 +1578,79 @@ pub struct GetLoggerDefinitionVersionResponse {
 }
 
 #[derive(Default, Debug, Clone, Serialize)]
+pub struct GetResourceDefinitionRequest {
+    /// Resource definition Id.
+    #[serde(rename = "ResourceDefinitionId")]
+    pub resource_definition_id: String,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct GetResourceDefinitionResponse {
+    /// Arn of the definition.
+    #[serde(rename = "Arn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arn: Option<String>,
+    /// Timestamp of when the definition was created.
+    #[serde(rename = "CreationTimestamp")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub creation_timestamp: Option<String>,
+    /// Id of the definition.
+    #[serde(rename = "Id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Last updated timestamp of the definition.
+    #[serde(rename = "LastUpdatedTimestamp")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_updated_timestamp: Option<String>,
+    /// Last version of the definition.
+    #[serde(rename = "LatestVersion")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_version: Option<String>,
+    /// Latest version arn of the definition.
+    #[serde(rename = "LatestVersionArn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_version_arn: Option<String>,
+    /// Name of the definition.
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct GetResourceDefinitionVersionRequest {
+    /// Resource definition Id.
+    #[serde(rename = "ResourceDefinitionId")]
+    pub resource_definition_id: String,
+    /// Resource definition version Id.
+    #[serde(rename = "ResourceDefinitionVersionId")]
+    pub resource_definition_version_id: String,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct GetResourceDefinitionVersionResponse {
+    /// Arn of the resource definition version.
+    #[serde(rename = "Arn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arn: Option<String>,
+    /// Timestamp of when the resource definition version was created.
+    #[serde(rename = "CreationTimestamp")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub creation_timestamp: Option<String>,
+    /// Information on definition.
+    #[serde(rename = "Definition")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub definition: Option<ResourceDefinitionVersion>,
+    /// Id of the resource definition the version belongs to.
+    #[serde(rename = "Id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Version of the resource definition version.
+    #[serde(rename = "Version")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Serialize)]
 pub struct GetServiceRoleForAccountRequest;
 
 #[derive(Default, Debug, Clone, Deserialize)]
@@ -1529,7 +1762,7 @@ pub struct GroupCertificateConfiguration {
     pub group_id: Option<String>,
 }
 
-/// Information of a group
+/// Information on the group
 #[derive(Default, Debug, Clone, Deserialize)]
 pub struct GroupInformation {
     /// Arn of a group.
@@ -1562,6 +1795,19 @@ pub struct GroupInformation {
     pub name: Option<String>,
 }
 
+/// Group owner related settings for local resources.
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct GroupOwnerSetting {
+    /// Eanble the auto added group owner.
+    #[serde(rename = "AutoAddGroupOwner")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_add_group_owner: Option<bool>,
+    /// Name of the group owner.
+    #[serde(rename = "GroupOwner")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_owner: Option<String>,
+}
+
 /// Information on group version
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct GroupVersion {
@@ -1577,10 +1823,14 @@ pub struct GroupVersion {
     #[serde(rename = "FunctionDefinitionVersionArn")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub function_definition_version_arn: Option<String>,
-    /// Logger definitionv ersion arn for this group.
+    /// Logger definition version arn for this group.
     #[serde(rename = "LoggerDefinitionVersionArn")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub logger_definition_version_arn: Option<String>,
+    /// Resource definition version arn for this group.
+    #[serde(rename = "ResourceDefinitionVersionArn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource_definition_version_arn: Option<String>,
     /// Subscription definition version arn for this group.
     #[serde(rename = "SubscriptionDefinitionVersionArn")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1638,7 +1888,7 @@ pub struct ListCoreDefinitionsResponse {
     pub next_token: Option<String>,
 }
 
-/// List of definition response
+/// List of definition responses
 #[derive(Default, Debug, Clone)]
 pub struct ListDefinitionsResponse {
     /// Definitions
@@ -1664,7 +1914,7 @@ pub struct ListDeploymentsRequest {
 
 #[derive(Default, Debug, Clone, Deserialize)]
 pub struct ListDeploymentsResponse {
-    /// Information on deployments
+    /// List of deployments for the requested groups
     #[serde(rename = "Deployments")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deployments: Option<Vec<Deployment>>,
@@ -1894,6 +2144,57 @@ pub struct ListLoggerDefinitionsResponse {
 }
 
 #[derive(Default, Debug, Clone, Serialize)]
+pub struct ListResourceDefinitionVersionsRequest {
+    /// Specifies the maximum number of list results to be returned in this page
+    #[serde(rename = "MaxResults")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_results: Option<String>,
+    /// Specifies the pagination token used when iterating through a paginated request
+    #[serde(rename = "NextToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub next_token: Option<String>,
+    /// Resource definition Id.
+    #[serde(rename = "ResourceDefinitionId")]
+    pub resource_definition_id: String,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct ListResourceDefinitionVersionsResponse {
+    /// The token for the next set of results, or ''null'' if there are no additional results.
+    #[serde(rename = "NextToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub next_token: Option<String>,
+    /// Versions
+    #[serde(rename = "Versions")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub versions: Option<Vec<VersionInformation>>,
+}
+
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct ListResourceDefinitionsRequest {
+    /// Specifies the maximum number of list results to be returned in this page
+    #[serde(rename = "MaxResults")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_results: Option<String>,
+    /// Specifies the pagination token used when iterating through a paginated request
+    #[serde(rename = "NextToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub next_token: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct ListResourceDefinitionsResponse {
+    /// Definitions
+    #[serde(rename = "Definitions")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub definitions: Option<Vec<DefinitionInformation>>,
+    /// The token for the next set of results, or ''null'' if there are no additional results.
+    #[serde(rename = "NextToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub next_token: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, Serialize)]
 pub struct ListSubscriptionDefinitionVersionsRequest {
     /// Specifies the maximum number of list results to be returned in this page
     #[serde(rename = "MaxResults")]
@@ -1953,6 +2254,36 @@ pub struct ListVersionsResponse {
     pub versions: Option<Vec<VersionInformation>>,
 }
 
+/// Attributes that define the Local Device Resource.
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct LocalDeviceResourceData {
+    /// Group owner related settings for local resources.
+    #[serde(rename = "GroupOwnerSetting")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_owner_setting: Option<GroupOwnerSetting>,
+    /// Local source path of the resource.
+    #[serde(rename = "SourcePath")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_path: Option<String>,
+}
+
+/// Attributes that define the Local Volume Resource.
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct LocalVolumeResourceData {
+    /// Local destination path of the resource.
+    #[serde(rename = "DestinationPath")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub destination_path: Option<String>,
+    /// Group owner related settings for local resources.
+    #[serde(rename = "GroupOwnerSetting")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_owner_setting: Option<GroupOwnerSetting>,
+    /// Local source path of the resource.
+    #[serde(rename = "SourcePath")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_path: Option<String>,
+}
+
 /// Information on the Logger
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Logger {
@@ -1985,6 +2316,86 @@ pub struct LoggerDefinitionVersion {
     #[serde(rename = "Loggers")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub loggers: Option<Vec<Logger>>,
+}
+
+/// Information needed to perform a reset of a group's deployments.
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct ResetDeploymentsRequest {
+    /// The client token used to request idempotent operations.
+    #[serde(rename = "AmznClientToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub amzn_client_token: Option<String>,
+    /// When set to true, perform a best-effort only core reset.
+    #[serde(rename = "Force")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub force: Option<bool>,
+    /// The unique Id of the AWS Greengrass Group
+    #[serde(rename = "GroupId")]
+    pub group_id: String,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct ResetDeploymentsResponse {
+    /// The arn of the reset deployment.
+    #[serde(rename = "DeploymentArn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deployment_arn: Option<String>,
+    /// The id of the reset deployment.
+    #[serde(rename = "DeploymentId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deployment_id: Option<String>,
+}
+
+/// Information on the resource.
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct Resource {
+    /// Resource Id.
+    #[serde(rename = "Id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// A descriptive resource name.
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// A container of data for all resource types.
+    #[serde(rename = "ResourceDataContainer")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource_data_container: Option<ResourceDataContainer>,
+}
+
+/// Policy for the function to access a resource.
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceAccessPolicy {
+    /// The function's access permission to the resource.
+    #[serde(rename = "Permission")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub permission: Option<String>,
+    /// Id of the resource. A reference to the resource definiton.
+    #[serde(rename = "ResourceId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<String>,
+}
+
+/// A container of data for all resource types.
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceDataContainer {
+    /// Attributes that define the Local Device Resource.
+    #[serde(rename = "LocalDeviceResourceData")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub local_device_resource_data: Option<LocalDeviceResourceData>,
+    /// Attributes that define the Local Volume Resource.
+    #[serde(rename = "LocalVolumeResourceData")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub local_volume_resource_data: Option<LocalVolumeResourceData>,
+}
+
+/// Information on resource definition version
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceDefinitionVersion {
+    /// List of resources.
+    #[serde(rename = "Resources")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resources: Option<Vec<Resource>>,
 }
 
 /// Information on subscription
@@ -2020,7 +2431,7 @@ pub struct SubscriptionDefinitionVersion {
 /// connectivity info request
 #[derive(Default, Debug, Clone, Serialize)]
 pub struct UpdateConnectivityInfoRequest {
-    /// Connectivity info array
+    /// Connectivity info list
     #[serde(rename = "ConnectivityInfo")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connectivity_info: Option<Vec<ConnectivityInfo>>,
@@ -2137,6 +2548,20 @@ pub struct UpdateLoggerDefinitionRequest {
 
 #[derive(Default, Debug, Clone, Deserialize)]
 pub struct UpdateLoggerDefinitionResponse;
+
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct UpdateResourceDefinitionRequest {
+    /// name of the definition
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// Resource definition Id.
+    #[serde(rename = "ResourceDefinitionId")]
+    pub resource_definition_id: String,
+}
+
+#[derive(Default, Debug, Clone, Deserialize)]
+pub struct UpdateResourceDefinitionResponse;
 
 #[derive(Default, Debug, Clone, Serialize)]
 pub struct UpdateSubscriptionDefinitionRequest {
@@ -3311,6 +3736,254 @@ impl Error for CreateLoggerDefinitionVersionError {
         }
     }
 }
+/// Errors returned by CreateResourceDefinition
+#[derive(Debug, PartialEq)]
+pub enum CreateResourceDefinitionError {
+    ///General Error
+    BadRequest(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl CreateResourceDefinitionError {
+    pub fn from_body(body: &str) -> CreateResourceDefinitionError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => {
+                        CreateResourceDefinitionError::BadRequest(String::from(error_message))
+                    }
+                    "ValidationException" => {
+                        CreateResourceDefinitionError::Validation(error_message.to_string())
+                    }
+                    _ => CreateResourceDefinitionError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => CreateResourceDefinitionError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for CreateResourceDefinitionError {
+    fn from(err: serde_json::error::Error) -> CreateResourceDefinitionError {
+        CreateResourceDefinitionError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for CreateResourceDefinitionError {
+    fn from(err: CredentialsError) -> CreateResourceDefinitionError {
+        CreateResourceDefinitionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for CreateResourceDefinitionError {
+    fn from(err: HttpDispatchError) -> CreateResourceDefinitionError {
+        CreateResourceDefinitionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for CreateResourceDefinitionError {
+    fn from(err: io::Error) -> CreateResourceDefinitionError {
+        CreateResourceDefinitionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for CreateResourceDefinitionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for CreateResourceDefinitionError {
+    fn description(&self) -> &str {
+        match *self {
+            CreateResourceDefinitionError::BadRequest(ref cause) => cause,
+            CreateResourceDefinitionError::Validation(ref cause) => cause,
+            CreateResourceDefinitionError::Credentials(ref err) => err.description(),
+            CreateResourceDefinitionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            CreateResourceDefinitionError::Unknown(ref cause) => cause,
+        }
+    }
+}
+/// Errors returned by CreateResourceDefinitionVersion
+#[derive(Debug, PartialEq)]
+pub enum CreateResourceDefinitionVersionError {
+    ///General Error
+    BadRequest(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl CreateResourceDefinitionVersionError {
+    pub fn from_body(body: &str) -> CreateResourceDefinitionVersionError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => CreateResourceDefinitionVersionError::BadRequest(
+                        String::from(error_message),
+                    ),
+                    "ValidationException" => {
+                        CreateResourceDefinitionVersionError::Validation(error_message.to_string())
+                    }
+                    _ => CreateResourceDefinitionVersionError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => CreateResourceDefinitionVersionError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for CreateResourceDefinitionVersionError {
+    fn from(err: serde_json::error::Error) -> CreateResourceDefinitionVersionError {
+        CreateResourceDefinitionVersionError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for CreateResourceDefinitionVersionError {
+    fn from(err: CredentialsError) -> CreateResourceDefinitionVersionError {
+        CreateResourceDefinitionVersionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for CreateResourceDefinitionVersionError {
+    fn from(err: HttpDispatchError) -> CreateResourceDefinitionVersionError {
+        CreateResourceDefinitionVersionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for CreateResourceDefinitionVersionError {
+    fn from(err: io::Error) -> CreateResourceDefinitionVersionError {
+        CreateResourceDefinitionVersionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for CreateResourceDefinitionVersionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for CreateResourceDefinitionVersionError {
+    fn description(&self) -> &str {
+        match *self {
+            CreateResourceDefinitionVersionError::BadRequest(ref cause) => cause,
+            CreateResourceDefinitionVersionError::Validation(ref cause) => cause,
+            CreateResourceDefinitionVersionError::Credentials(ref err) => err.description(),
+            CreateResourceDefinitionVersionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            CreateResourceDefinitionVersionError::Unknown(ref cause) => cause,
+        }
+    }
+}
+/// Errors returned by CreateSoftwareUpdateJob
+#[derive(Debug, PartialEq)]
+pub enum CreateSoftwareUpdateJobError {
+    ///General Error
+    BadRequest(String),
+    ///General Error
+    InternalServerError(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl CreateSoftwareUpdateJobError {
+    pub fn from_body(body: &str) -> CreateSoftwareUpdateJobError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => {
+                        CreateSoftwareUpdateJobError::BadRequest(String::from(error_message))
+                    }
+                    "InternalServerErrorException" => {
+                        CreateSoftwareUpdateJobError::InternalServerError(String::from(
+                            error_message,
+                        ))
+                    }
+                    "ValidationException" => {
+                        CreateSoftwareUpdateJobError::Validation(error_message.to_string())
+                    }
+                    _ => CreateSoftwareUpdateJobError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => CreateSoftwareUpdateJobError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for CreateSoftwareUpdateJobError {
+    fn from(err: serde_json::error::Error) -> CreateSoftwareUpdateJobError {
+        CreateSoftwareUpdateJobError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for CreateSoftwareUpdateJobError {
+    fn from(err: CredentialsError) -> CreateSoftwareUpdateJobError {
+        CreateSoftwareUpdateJobError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for CreateSoftwareUpdateJobError {
+    fn from(err: HttpDispatchError) -> CreateSoftwareUpdateJobError {
+        CreateSoftwareUpdateJobError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for CreateSoftwareUpdateJobError {
+    fn from(err: io::Error) -> CreateSoftwareUpdateJobError {
+        CreateSoftwareUpdateJobError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for CreateSoftwareUpdateJobError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for CreateSoftwareUpdateJobError {
+    fn description(&self) -> &str {
+        match *self {
+            CreateSoftwareUpdateJobError::BadRequest(ref cause) => cause,
+            CreateSoftwareUpdateJobError::InternalServerError(ref cause) => cause,
+            CreateSoftwareUpdateJobError::Validation(ref cause) => cause,
+            CreateSoftwareUpdateJobError::Credentials(ref err) => err.description(),
+            CreateSoftwareUpdateJobError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            CreateSoftwareUpdateJobError::Unknown(ref cause) => cause,
+        }
+    }
+}
 /// Errors returned by CreateSubscriptionDefinition
 #[derive(Debug, PartialEq)]
 pub enum CreateSubscriptionDefinitionError {
@@ -3866,6 +4539,86 @@ impl Error for DeleteLoggerDefinitionError {
                 dispatch_error.description()
             }
             DeleteLoggerDefinitionError::Unknown(ref cause) => cause,
+        }
+    }
+}
+/// Errors returned by DeleteResourceDefinition
+#[derive(Debug, PartialEq)]
+pub enum DeleteResourceDefinitionError {
+    ///General Error
+    BadRequest(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl DeleteResourceDefinitionError {
+    pub fn from_body(body: &str) -> DeleteResourceDefinitionError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => {
+                        DeleteResourceDefinitionError::BadRequest(String::from(error_message))
+                    }
+                    "ValidationException" => {
+                        DeleteResourceDefinitionError::Validation(error_message.to_string())
+                    }
+                    _ => DeleteResourceDefinitionError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => DeleteResourceDefinitionError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for DeleteResourceDefinitionError {
+    fn from(err: serde_json::error::Error) -> DeleteResourceDefinitionError {
+        DeleteResourceDefinitionError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for DeleteResourceDefinitionError {
+    fn from(err: CredentialsError) -> DeleteResourceDefinitionError {
+        DeleteResourceDefinitionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for DeleteResourceDefinitionError {
+    fn from(err: HttpDispatchError) -> DeleteResourceDefinitionError {
+        DeleteResourceDefinitionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for DeleteResourceDefinitionError {
+    fn from(err: io::Error) -> DeleteResourceDefinitionError {
+        DeleteResourceDefinitionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for DeleteResourceDefinitionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for DeleteResourceDefinitionError {
+    fn description(&self) -> &str {
+        match *self {
+            DeleteResourceDefinitionError::BadRequest(ref cause) => cause,
+            DeleteResourceDefinitionError::Validation(ref cause) => cause,
+            DeleteResourceDefinitionError::Credentials(ref err) => err.description(),
+            DeleteResourceDefinitionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            DeleteResourceDefinitionError::Unknown(ref cause) => cause,
         }
     }
 }
@@ -5339,6 +6092,166 @@ impl Error for GetLoggerDefinitionVersionError {
         }
     }
 }
+/// Errors returned by GetResourceDefinition
+#[derive(Debug, PartialEq)]
+pub enum GetResourceDefinitionError {
+    ///General Error
+    BadRequest(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl GetResourceDefinitionError {
+    pub fn from_body(body: &str) -> GetResourceDefinitionError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => {
+                        GetResourceDefinitionError::BadRequest(String::from(error_message))
+                    }
+                    "ValidationException" => {
+                        GetResourceDefinitionError::Validation(error_message.to_string())
+                    }
+                    _ => GetResourceDefinitionError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => GetResourceDefinitionError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for GetResourceDefinitionError {
+    fn from(err: serde_json::error::Error) -> GetResourceDefinitionError {
+        GetResourceDefinitionError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for GetResourceDefinitionError {
+    fn from(err: CredentialsError) -> GetResourceDefinitionError {
+        GetResourceDefinitionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for GetResourceDefinitionError {
+    fn from(err: HttpDispatchError) -> GetResourceDefinitionError {
+        GetResourceDefinitionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for GetResourceDefinitionError {
+    fn from(err: io::Error) -> GetResourceDefinitionError {
+        GetResourceDefinitionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for GetResourceDefinitionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for GetResourceDefinitionError {
+    fn description(&self) -> &str {
+        match *self {
+            GetResourceDefinitionError::BadRequest(ref cause) => cause,
+            GetResourceDefinitionError::Validation(ref cause) => cause,
+            GetResourceDefinitionError::Credentials(ref err) => err.description(),
+            GetResourceDefinitionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            GetResourceDefinitionError::Unknown(ref cause) => cause,
+        }
+    }
+}
+/// Errors returned by GetResourceDefinitionVersion
+#[derive(Debug, PartialEq)]
+pub enum GetResourceDefinitionVersionError {
+    ///General Error
+    BadRequest(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl GetResourceDefinitionVersionError {
+    pub fn from_body(body: &str) -> GetResourceDefinitionVersionError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => {
+                        GetResourceDefinitionVersionError::BadRequest(String::from(error_message))
+                    }
+                    "ValidationException" => {
+                        GetResourceDefinitionVersionError::Validation(error_message.to_string())
+                    }
+                    _ => GetResourceDefinitionVersionError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => GetResourceDefinitionVersionError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for GetResourceDefinitionVersionError {
+    fn from(err: serde_json::error::Error) -> GetResourceDefinitionVersionError {
+        GetResourceDefinitionVersionError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for GetResourceDefinitionVersionError {
+    fn from(err: CredentialsError) -> GetResourceDefinitionVersionError {
+        GetResourceDefinitionVersionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for GetResourceDefinitionVersionError {
+    fn from(err: HttpDispatchError) -> GetResourceDefinitionVersionError {
+        GetResourceDefinitionVersionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for GetResourceDefinitionVersionError {
+    fn from(err: io::Error) -> GetResourceDefinitionVersionError {
+        GetResourceDefinitionVersionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for GetResourceDefinitionVersionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for GetResourceDefinitionVersionError {
+    fn description(&self) -> &str {
+        match *self {
+            GetResourceDefinitionVersionError::BadRequest(ref cause) => cause,
+            GetResourceDefinitionVersionError::Validation(ref cause) => cause,
+            GetResourceDefinitionVersionError::Credentials(ref err) => err.description(),
+            GetResourceDefinitionVersionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            GetResourceDefinitionVersionError::Unknown(ref cause) => cause,
+        }
+    }
+}
 /// Errors returned by GetServiceRoleForAccount
 #[derive(Debug, PartialEq)]
 pub enum GetServiceRoleForAccountError {
@@ -6513,6 +7426,160 @@ impl Error for ListLoggerDefinitionsError {
         }
     }
 }
+/// Errors returned by ListResourceDefinitionVersions
+#[derive(Debug, PartialEq)]
+pub enum ListResourceDefinitionVersionsError {
+    ///General Error
+    BadRequest(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl ListResourceDefinitionVersionsError {
+    pub fn from_body(body: &str) -> ListResourceDefinitionVersionsError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => {
+                        ListResourceDefinitionVersionsError::BadRequest(String::from(error_message))
+                    }
+                    "ValidationException" => {
+                        ListResourceDefinitionVersionsError::Validation(error_message.to_string())
+                    }
+                    _ => ListResourceDefinitionVersionsError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => ListResourceDefinitionVersionsError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for ListResourceDefinitionVersionsError {
+    fn from(err: serde_json::error::Error) -> ListResourceDefinitionVersionsError {
+        ListResourceDefinitionVersionsError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for ListResourceDefinitionVersionsError {
+    fn from(err: CredentialsError) -> ListResourceDefinitionVersionsError {
+        ListResourceDefinitionVersionsError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for ListResourceDefinitionVersionsError {
+    fn from(err: HttpDispatchError) -> ListResourceDefinitionVersionsError {
+        ListResourceDefinitionVersionsError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for ListResourceDefinitionVersionsError {
+    fn from(err: io::Error) -> ListResourceDefinitionVersionsError {
+        ListResourceDefinitionVersionsError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for ListResourceDefinitionVersionsError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for ListResourceDefinitionVersionsError {
+    fn description(&self) -> &str {
+        match *self {
+            ListResourceDefinitionVersionsError::BadRequest(ref cause) => cause,
+            ListResourceDefinitionVersionsError::Validation(ref cause) => cause,
+            ListResourceDefinitionVersionsError::Credentials(ref err) => err.description(),
+            ListResourceDefinitionVersionsError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            ListResourceDefinitionVersionsError::Unknown(ref cause) => cause,
+        }
+    }
+}
+/// Errors returned by ListResourceDefinitions
+#[derive(Debug, PartialEq)]
+pub enum ListResourceDefinitionsError {
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl ListResourceDefinitionsError {
+    pub fn from_body(body: &str) -> ListResourceDefinitionsError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "ValidationException" => {
+                        ListResourceDefinitionsError::Validation(error_message.to_string())
+                    }
+                    _ => ListResourceDefinitionsError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => ListResourceDefinitionsError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for ListResourceDefinitionsError {
+    fn from(err: serde_json::error::Error) -> ListResourceDefinitionsError {
+        ListResourceDefinitionsError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for ListResourceDefinitionsError {
+    fn from(err: CredentialsError) -> ListResourceDefinitionsError {
+        ListResourceDefinitionsError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for ListResourceDefinitionsError {
+    fn from(err: HttpDispatchError) -> ListResourceDefinitionsError {
+        ListResourceDefinitionsError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for ListResourceDefinitionsError {
+    fn from(err: io::Error) -> ListResourceDefinitionsError {
+        ListResourceDefinitionsError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for ListResourceDefinitionsError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for ListResourceDefinitionsError {
+    fn description(&self) -> &str {
+        match *self {
+            ListResourceDefinitionsError::Validation(ref cause) => cause,
+            ListResourceDefinitionsError::Credentials(ref err) => err.description(),
+            ListResourceDefinitionsError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            ListResourceDefinitionsError::Unknown(ref cause) => cause,
+        }
+    }
+}
 /// Errors returned by ListSubscriptionDefinitionVersions
 #[derive(Debug, PartialEq)]
 pub enum ListSubscriptionDefinitionVersionsError {
@@ -6664,6 +7731,84 @@ impl Error for ListSubscriptionDefinitionsError {
                 dispatch_error.description()
             }
             ListSubscriptionDefinitionsError::Unknown(ref cause) => cause,
+        }
+    }
+}
+/// Errors returned by ResetDeployments
+#[derive(Debug, PartialEq)]
+pub enum ResetDeploymentsError {
+    ///General Error
+    BadRequest(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl ResetDeploymentsError {
+    pub fn from_body(body: &str) -> ResetDeploymentsError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => {
+                        ResetDeploymentsError::BadRequest(String::from(error_message))
+                    }
+                    "ValidationException" => {
+                        ResetDeploymentsError::Validation(error_message.to_string())
+                    }
+                    _ => ResetDeploymentsError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => ResetDeploymentsError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for ResetDeploymentsError {
+    fn from(err: serde_json::error::Error) -> ResetDeploymentsError {
+        ResetDeploymentsError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for ResetDeploymentsError {
+    fn from(err: CredentialsError) -> ResetDeploymentsError {
+        ResetDeploymentsError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for ResetDeploymentsError {
+    fn from(err: HttpDispatchError) -> ResetDeploymentsError {
+        ResetDeploymentsError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for ResetDeploymentsError {
+    fn from(err: io::Error) -> ResetDeploymentsError {
+        ResetDeploymentsError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for ResetDeploymentsError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for ResetDeploymentsError {
+    fn description(&self) -> &str {
+        match *self {
+            ResetDeploymentsError::BadRequest(ref cause) => cause,
+            ResetDeploymentsError::Validation(ref cause) => cause,
+            ResetDeploymentsError::Credentials(ref err) => err.description(),
+            ResetDeploymentsError::HttpDispatch(ref dispatch_error) => dispatch_error.description(),
+            ResetDeploymentsError::Unknown(ref cause) => cause,
         }
     }
 }
@@ -7241,6 +8386,86 @@ impl Error for UpdateLoggerDefinitionError {
         }
     }
 }
+/// Errors returned by UpdateResourceDefinition
+#[derive(Debug, PartialEq)]
+pub enum UpdateResourceDefinitionError {
+    ///General Error
+    BadRequest(String),
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl UpdateResourceDefinitionError {
+    pub fn from_body(body: &str) -> UpdateResourceDefinitionError {
+        match from_str::<SerdeJsonValue>(body) {
+            Ok(json) => {
+                let raw_error_type = json.get("__type")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("Unknown");
+                let error_message = json.get("message").and_then(|m| m.as_str()).unwrap_or(body);
+
+                let pieces: Vec<&str> = raw_error_type.split("#").collect();
+                let error_type = pieces.last().expect("Expected error type");
+
+                match *error_type {
+                    "BadRequestException" => {
+                        UpdateResourceDefinitionError::BadRequest(String::from(error_message))
+                    }
+                    "ValidationException" => {
+                        UpdateResourceDefinitionError::Validation(error_message.to_string())
+                    }
+                    _ => UpdateResourceDefinitionError::Unknown(String::from(body)),
+                }
+            }
+            Err(_) => UpdateResourceDefinitionError::Unknown(String::from(body)),
+        }
+    }
+}
+
+impl From<serde_json::error::Error> for UpdateResourceDefinitionError {
+    fn from(err: serde_json::error::Error) -> UpdateResourceDefinitionError {
+        UpdateResourceDefinitionError::Unknown(err.description().to_string())
+    }
+}
+impl From<CredentialsError> for UpdateResourceDefinitionError {
+    fn from(err: CredentialsError) -> UpdateResourceDefinitionError {
+        UpdateResourceDefinitionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for UpdateResourceDefinitionError {
+    fn from(err: HttpDispatchError) -> UpdateResourceDefinitionError {
+        UpdateResourceDefinitionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for UpdateResourceDefinitionError {
+    fn from(err: io::Error) -> UpdateResourceDefinitionError {
+        UpdateResourceDefinitionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for UpdateResourceDefinitionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for UpdateResourceDefinitionError {
+    fn description(&self) -> &str {
+        match *self {
+            UpdateResourceDefinitionError::BadRequest(ref cause) => cause,
+            UpdateResourceDefinitionError::Validation(ref cause) => cause,
+            UpdateResourceDefinitionError::Credentials(ref err) => err.description(),
+            UpdateResourceDefinitionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            UpdateResourceDefinitionError::Unknown(ref cause) => cause,
+        }
+    }
+}
 /// Errors returned by UpdateSubscriptionDefinition
 #[derive(Debug, PartialEq)]
 pub enum UpdateSubscriptionDefinitionError {
@@ -7407,6 +8632,24 @@ pub trait GreenGrass {
         input: &CreateLoggerDefinitionVersionRequest,
     ) -> Result<CreateLoggerDefinitionVersionResponse, CreateLoggerDefinitionVersionError>;
 
+    #[doc="Creates a resource definition which contains a list of resources to be used in a group. You can create an initial version of the definition by providing a list of resources now, or use ``CreateResourceDefinitionVersion`` later."]
+    fn create_resource_definition(
+        &self,
+        input: &CreateResourceDefinitionRequest,
+    ) -> Result<CreateResourceDefinitionResponse, CreateResourceDefinitionError>;
+
+    #[doc = "Create a version of a resource definition that has already been defined."]
+    fn create_resource_definition_version(
+        &self,
+        input: &CreateResourceDefinitionVersionRequest,
+    ) -> Result<CreateResourceDefinitionVersionResponse, CreateResourceDefinitionVersionError>;
+
+    #[doc="Creates an Iot Job that will trigger your Greengrass Cores to update the software they are running."]
+    fn create_software_update_job(
+        &self,
+        input: &CreateSoftwareUpdateJobRequest,
+    ) -> Result<CreateSoftwareUpdateJobResponse, CreateSoftwareUpdateJobError>;
+
     #[doc="Creates a subscription definition. You may optionally provide the initial version of the subscription definition or use ``CreateSubscriptionDefinitionVersion`` at a later time."]
     fn create_subscription_definition(
         &self,
@@ -7448,6 +8691,12 @@ pub trait GreenGrass {
         &self,
         input: &DeleteLoggerDefinitionRequest,
     ) -> Result<DeleteLoggerDefinitionResponse, DeleteLoggerDefinitionError>;
+
+    #[doc = "Deletes a resource definition."]
+    fn delete_resource_definition(
+        &self,
+        input: &DeleteResourceDefinitionRequest,
+    ) -> Result<DeleteResourceDefinitionResponse, DeleteResourceDefinitionError>;
 
     #[doc="Deletes a subscription definition. The subscription definition must not have been used in a deployment."]
     fn delete_subscription_definition(
@@ -7553,6 +8802,18 @@ pub trait GreenGrass {
         input: &GetLoggerDefinitionVersionRequest,
     ) -> Result<GetLoggerDefinitionVersionResponse, GetLoggerDefinitionVersionError>;
 
+    #[doc="Retrieves information about a resource definition, such as its creation time and latest version."]
+    fn get_resource_definition(
+        &self,
+        input: &GetResourceDefinitionRequest,
+    ) -> Result<GetResourceDefinitionResponse, GetResourceDefinitionError>;
+
+    #[doc="Retrieves information about a resource definition version, such as which resources are included in the version."]
+    fn get_resource_definition_version(
+        &self,
+        input: &GetResourceDefinitionVersionRequest,
+    ) -> Result<GetResourceDefinitionVersionResponse, GetResourceDefinitionVersionError>;
+
     #[doc = "Retrieves the service role that is attached to the account."]
     fn get_service_role_for_account(
         &self,
@@ -7640,6 +8901,18 @@ pub trait GreenGrass {
         input: &ListLoggerDefinitionsRequest,
     ) -> Result<ListLoggerDefinitionsResponse, ListLoggerDefinitionsError>;
 
+    #[doc = "Lists the versions of a resource definition."]
+    fn list_resource_definition_versions(
+        &self,
+        input: &ListResourceDefinitionVersionsRequest,
+    ) -> Result<ListResourceDefinitionVersionsResponse, ListResourceDefinitionVersionsError>;
+
+    #[doc = "Retrieves a list of resource definitions."]
+    fn list_resource_definitions(
+        &self,
+        input: &ListResourceDefinitionsRequest,
+    ) -> Result<ListResourceDefinitionsResponse, ListResourceDefinitionsError>;
+
     #[doc = "Lists the versions of a subscription definition."]
     fn list_subscription_definition_versions(
         &self,
@@ -7651,6 +8924,12 @@ pub trait GreenGrass {
         &self,
         input: &ListSubscriptionDefinitionsRequest,
     ) -> Result<ListSubscriptionDefinitionsResponse, ListSubscriptionDefinitionsError>;
+
+    #[doc = "Resets a group's deployments."]
+    fn reset_deployments(
+        &self,
+        input: &ResetDeploymentsRequest,
+    ) -> Result<ResetDeploymentsResponse, ResetDeploymentsError>;
 
     #[doc="Updates the connectivity information for the core. Any devices that belong to the group which has this core will receive this information in order to find the location of the core and connect to it."]
     fn update_connectivity_info(
@@ -7693,6 +8972,12 @@ pub trait GreenGrass {
         &self,
         input: &UpdateLoggerDefinitionRequest,
     ) -> Result<UpdateLoggerDefinitionResponse, UpdateLoggerDefinitionError>;
+
+    #[doc = "Updates a resource definition."]
+    fn update_resource_definition(
+        &self,
+        input: &UpdateResourceDefinitionRequest,
+    ) -> Result<UpdateResourceDefinitionResponse, UpdateResourceDefinitionError>;
 
     #[doc = "Updates a subscription definition."]
     fn update_subscription_definition(
@@ -8384,6 +9669,148 @@ where
         }
     }
 
+    #[doc="Creates a resource definition which contains a list of resources to be used in a group. You can create an initial version of the definition by providing a list of resources now, or use ``CreateResourceDefinitionVersion`` later."]
+    fn create_resource_definition(
+        &self,
+        input: &CreateResourceDefinitionRequest,
+    ) -> Result<CreateResourceDefinitionResponse, CreateResourceDefinitionError> {
+        let request_uri = "/greengrass/definition/resources";
+
+        let mut request = SignedRequest::new("POST", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        let encoded = Some(serde_json::to_vec(input).unwrap());
+        request.set_payload(encoded);
+
+        if let Some(ref amzn_client_token) = input.amzn_client_token {
+            request.add_header("X-Amzn-Client-Token", &amzn_client_token.to_string());
+        }
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result =
+                    serde_json::from_slice::<CreateResourceDefinitionResponse>(&body).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(CreateResourceDefinitionError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
+    #[doc = "Create a version of a resource definition that has already been defined."]
+    fn create_resource_definition_version(
+        &self,
+        input: &CreateResourceDefinitionVersionRequest,
+    ) -> Result<CreateResourceDefinitionVersionResponse, CreateResourceDefinitionVersionError> {
+        let request_uri = format!(
+            "/greengrass/definition/resources/{resource_definition_id}/versions",
+            resource_definition_id = input.resource_definition_id
+        );
+
+        let mut request = SignedRequest::new("POST", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        let encoded = Some(serde_json::to_vec(input).unwrap());
+        request.set_payload(encoded);
+
+        if let Some(ref amzn_client_token) = input.amzn_client_token {
+            request.add_header("X-Amzn-Client-Token", &amzn_client_token.to_string());
+        }
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result = serde_json::from_slice::<CreateResourceDefinitionVersionResponse>(
+                    &body,
+                ).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(CreateResourceDefinitionVersionError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
+    #[doc="Creates an Iot Job that will trigger your Greengrass Cores to update the software they are running."]
+    fn create_software_update_job(
+        &self,
+        input: &CreateSoftwareUpdateJobRequest,
+    ) -> Result<CreateSoftwareUpdateJobResponse, CreateSoftwareUpdateJobError> {
+        let request_uri = "/greengrass/updates";
+
+        let mut request = SignedRequest::new("POST", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        let encoded = Some(serde_json::to_vec(input).unwrap());
+        request.set_payload(encoded);
+
+        if let Some(ref amzn_client_token) = input.amzn_client_token {
+            request.add_header("X-Amzn-Client-Token", &amzn_client_token.to_string());
+        }
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result =
+                    serde_json::from_slice::<CreateSoftwareUpdateJobResponse>(&body).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(CreateSoftwareUpdateJobError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
     #[doc="Creates a subscription definition. You may optionally provide the initial version of the subscription definition or use ``CreateSubscriptionDefinitionVersion`` at a later time."]
     fn create_subscription_definition(
         &self,
@@ -8680,6 +10107,48 @@ where
                 let mut body: Vec<u8> = Vec::new();
                 try!(response.body.read_to_end(&mut body));
                 Err(DeleteLoggerDefinitionError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
+    #[doc = "Deletes a resource definition."]
+    fn delete_resource_definition(
+        &self,
+        input: &DeleteResourceDefinitionRequest,
+    ) -> Result<DeleteResourceDefinitionResponse, DeleteResourceDefinitionError> {
+        let request_uri = format!(
+            "/greengrass/definition/resources/{resource_definition_id}",
+            resource_definition_id = input.resource_definition_id
+        );
+
+        let mut request = SignedRequest::new("DELETE", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result =
+                    serde_json::from_slice::<DeleteResourceDefinitionResponse>(&body).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(DeleteResourceDefinitionError::from_body(
                     String::from_utf8_lossy(&body).as_ref(),
                 ))
             }
@@ -9419,6 +10888,87 @@ where
         }
     }
 
+    #[doc="Retrieves information about a resource definition, such as its creation time and latest version."]
+    fn get_resource_definition(
+        &self,
+        input: &GetResourceDefinitionRequest,
+    ) -> Result<GetResourceDefinitionResponse, GetResourceDefinitionError> {
+        let request_uri = format!(
+            "/greengrass/definition/resources/{resource_definition_id}",
+            resource_definition_id = input.resource_definition_id
+        );
+
+        let mut request = SignedRequest::new("GET", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result =
+                    serde_json::from_slice::<GetResourceDefinitionResponse>(&body).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(GetResourceDefinitionError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
+    #[doc="Retrieves information about a resource definition version, such as which resources are included in the version."]
+    fn get_resource_definition_version(
+        &self,
+        input: &GetResourceDefinitionVersionRequest,
+    ) -> Result<GetResourceDefinitionVersionResponse, GetResourceDefinitionVersionError> {
+        let request_uri = format!("/greengrass/definition/resources/{resource_definition_id}/versions/{resource_definition_version_id}", resource_definition_id = input.resource_definition_id, resource_definition_version_id = input.resource_definition_version_id);
+
+        let mut request = SignedRequest::new("GET", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result =
+                    serde_json::from_slice::<GetResourceDefinitionVersionResponse>(&body).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(GetResourceDefinitionVersionError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
     #[doc = "Retrieves the service role that is attached to the account."]
     fn get_service_role_for_account(
         &self,
@@ -10126,6 +11676,106 @@ where
         }
     }
 
+    #[doc = "Lists the versions of a resource definition."]
+    fn list_resource_definition_versions(
+        &self,
+        input: &ListResourceDefinitionVersionsRequest,
+    ) -> Result<ListResourceDefinitionVersionsResponse, ListResourceDefinitionVersionsError> {
+        let request_uri = format!(
+            "/greengrass/definition/resources/{resource_definition_id}/versions",
+            resource_definition_id = input.resource_definition_id
+        );
+
+        let mut request = SignedRequest::new("GET", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        let mut params = Params::new();
+        if let Some(ref x) = input.max_results {
+            params.put("MaxResults", x);
+        }
+        if let Some(ref x) = input.next_token {
+            params.put("NextToken", x);
+        }
+        request.set_params(params);
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result = serde_json::from_slice::<ListResourceDefinitionVersionsResponse>(
+                    &body,
+                ).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(ListResourceDefinitionVersionsError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
+    #[doc = "Retrieves a list of resource definitions."]
+    fn list_resource_definitions(
+        &self,
+        input: &ListResourceDefinitionsRequest,
+    ) -> Result<ListResourceDefinitionsResponse, ListResourceDefinitionsError> {
+        let request_uri = "/greengrass/definition/resources";
+
+        let mut request = SignedRequest::new("GET", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        let mut params = Params::new();
+        if let Some(ref x) = input.max_results {
+            params.put("MaxResults", x);
+        }
+        if let Some(ref x) = input.next_token {
+            params.put("NextToken", x);
+        }
+        request.set_params(params);
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result =
+                    serde_json::from_slice::<ListResourceDefinitionsResponse>(&body).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(ListResourceDefinitionsError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
     #[doc = "Lists the versions of a subscription definition."]
     fn list_subscription_definition_versions(
         &self,
@@ -10221,6 +11871,54 @@ where
                 let mut body: Vec<u8> = Vec::new();
                 try!(response.body.read_to_end(&mut body));
                 Err(ListSubscriptionDefinitionsError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
+    #[doc = "Resets a group's deployments."]
+    fn reset_deployments(
+        &self,
+        input: &ResetDeploymentsRequest,
+    ) -> Result<ResetDeploymentsResponse, ResetDeploymentsError> {
+        let request_uri = format!(
+            "/greengrass/groups/{group_id}/deployments/$reset",
+            group_id = input.group_id
+        );
+
+        let mut request = SignedRequest::new("POST", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        let encoded = Some(serde_json::to_vec(input).unwrap());
+        request.set_payload(encoded);
+
+        if let Some(ref amzn_client_token) = input.amzn_client_token {
+            request.add_header("X-Amzn-Client-Token", &amzn_client_token.to_string());
+        }
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result = serde_json::from_slice::<ResetDeploymentsResponse>(&body).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(ResetDeploymentsError::from_body(
                     String::from_utf8_lossy(&body).as_ref(),
                 ))
             }
@@ -10533,6 +12231,51 @@ where
                 let mut body: Vec<u8> = Vec::new();
                 try!(response.body.read_to_end(&mut body));
                 Err(UpdateLoggerDefinitionError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
+    #[doc = "Updates a resource definition."]
+    fn update_resource_definition(
+        &self,
+        input: &UpdateResourceDefinitionRequest,
+    ) -> Result<UpdateResourceDefinitionResponse, UpdateResourceDefinitionError> {
+        let request_uri = format!(
+            "/greengrass/definition/resources/{resource_definition_id}",
+            resource_definition_id = input.resource_definition_id
+        );
+
+        let mut request = SignedRequest::new("PUT", "greengrass", &self.region, &request_uri);
+        request.set_content_type("application/x-amz-json-1.1".to_owned());
+
+        let encoded = Some(serde_json::to_vec(input).unwrap());
+        request.set_payload(encoded);
+
+        request.sign_with_plus(&self.credentials_provider.credentials()?, true);
+        let mut response = self.dispatcher.dispatch(&request)?;
+
+        match response.status {
+            StatusCode::Ok => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body == b"{}" {
+                    body = b"null".to_vec();
+                }
+
+                debug!("Response body: {:?}", body);
+                debug!("Response status: {}", response.status);
+                let result =
+                    serde_json::from_slice::<UpdateResourceDefinitionResponse>(&body).unwrap();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(UpdateResourceDefinitionError::from_body(
                     String::from_utf8_lossy(&body).as_ref(),
                 ))
             }

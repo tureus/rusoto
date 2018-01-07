@@ -11,7 +11,7 @@
 //
 // =================================================================
 
-//! Defines service operations used by the GlueFrontendService
+//! <fullname>AWS Glue</fullname> <p>Defines the public endpoint for the AWS Glue service.</p>
 //!
 //! If you're using the service, you're probably looking for [GlueClient](struct.GlueClient.html) and [Glue](trait.Glue.html).
 

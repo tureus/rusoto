@@ -39,12 +39,14 @@ pub struct Budget {
     #[serde(rename = "CostFilters")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cost_filters: Option<::std::collections::HashMap<String, Vec<String>>>,
-    #[serde(rename = "CostTypes")] pub cost_types: CostTypes,
+    #[serde(rename = "CostTypes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cost_types: Option<CostTypes>,
     #[serde(rename = "TimePeriod")] pub time_period: TimePeriod,
     #[serde(rename = "TimeUnit")] pub time_unit: String,
 }
 
-/// A structure holds the actual and forecasted spend for a budget.
+/// A structure that holds the actual and forecasted spend for a budget.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct CalculatedSpend {
     #[serde(rename = "ActualSpend")] pub actual_spend: Spend,
@@ -56,9 +58,42 @@ pub struct CalculatedSpend {
 /// This includes the options for getting the cost of a budget.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct CostTypes {
-    #[serde(rename = "IncludeSubscription")] pub include_subscription: bool,
-    #[serde(rename = "IncludeTax")] pub include_tax: bool,
-    #[serde(rename = "UseBlended")] pub use_blended: bool,
+    /// A boolean value whether to include credits in the cost budget.
+    #[serde(rename = "IncludeCredit")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_credit: Option<bool>,
+    /// A boolean value whether to include other subscription costs in the cost budget.
+    #[serde(rename = "IncludeOtherSubscription")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_other_subscription: Option<bool>,
+    /// A boolean value whether to include recurring costs in the cost budget.
+    #[serde(rename = "IncludeRecurring")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_recurring: Option<bool>,
+    /// A boolean value whether to include refunds in the cost budget.
+    #[serde(rename = "IncludeRefund")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_refund: Option<bool>,
+    /// A boolean value whether to include subscriptions in the cost budget.
+    #[serde(rename = "IncludeSubscription")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_subscription: Option<bool>,
+    /// A boolean value whether to include support costs in the cost budget.
+    #[serde(rename = "IncludeSupport")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_support: Option<bool>,
+    /// A boolean value whether to include tax in the cost budget.
+    #[serde(rename = "IncludeTax")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_tax: Option<bool>,
+    /// A boolean value whether to include upfront costs in the cost budget.
+    #[serde(rename = "IncludeUpfront")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_upfront: Option<bool>,
+    /// A boolean value whether to use blended costs in the cost budget.
+    #[serde(rename = "UseBlended")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub use_blended: Option<bool>,
 }
 
 /// Request of CreateBudget
@@ -230,6 +265,9 @@ pub struct Notification {
     #[serde(rename = "ComparisonOperator")] pub comparison_operator: String,
     #[serde(rename = "NotificationType")] pub notification_type: String,
     #[serde(rename = "Threshold")] pub threshold: f64,
+    #[serde(rename = "ThresholdType")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub threshold_type: Option<String>,
 }
 
 /// A structure to relate notification and a list of subscribers who belong to the notification.
@@ -239,7 +277,7 @@ pub struct NotificationWithSubscribers {
     #[serde(rename = "Subscribers")] pub subscribers: Vec<Subscriber>,
 }
 
-/// A structure represent either a cost spend or usage spend. Contains an amount and a unit.
+/// A structure that represents either a cost spend or usage spend. Contains an amount and a unit.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Spend {
     #[serde(rename = "Amount")] pub amount: String,
@@ -253,7 +291,7 @@ pub struct Subscriber {
     #[serde(rename = "SubscriptionType")] pub subscription_type: String,
 }
 
-/// A time period indicated the start date and end date of a budget.
+/// A time period indicating the start date and end date of a budget.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct TimePeriod {
     #[serde(rename = "End")] pub end: f64,
@@ -1377,6 +1415,8 @@ impl Error for UpdateBudgetError {
 /// Errors returned by UpdateNotification
 #[derive(Debug, PartialEq)]
 pub enum UpdateNotificationError {
+    ///The exception is thrown when customer tries to create a record (e.g. budget) that already exists.
+    DuplicateRecord(String),
     ///This exception is thrown on an unknown internal failure.
     InternalError(String),
     ///This exception is thrown if any request is given an invalid parameter. E.g., if a required Date field is null.
@@ -1406,6 +1446,9 @@ impl UpdateNotificationError {
                 let error_type = pieces.last().expect("Expected error type");
 
                 match *error_type {
+                    "DuplicateRecordException" => {
+                        UpdateNotificationError::DuplicateRecord(String::from(error_message))
+                    }
                     "InternalErrorException" => {
                         UpdateNotificationError::InternalError(String::from(error_message))
                     }
@@ -1454,6 +1497,7 @@ impl fmt::Display for UpdateNotificationError {
 impl Error for UpdateNotificationError {
     fn description(&self) -> &str {
         match *self {
+            UpdateNotificationError::DuplicateRecord(ref cause) => cause,
             UpdateNotificationError::InternalError(ref cause) => cause,
             UpdateNotificationError::InvalidParameter(ref cause) => cause,
             UpdateNotificationError::NotFound(ref cause) => cause,
@@ -1469,6 +1513,8 @@ impl Error for UpdateNotificationError {
 /// Errors returned by UpdateSubscriber
 #[derive(Debug, PartialEq)]
 pub enum UpdateSubscriberError {
+    ///The exception is thrown when customer tries to create a record (e.g. budget) that already exists.
+    DuplicateRecord(String),
     ///This exception is thrown on an unknown internal failure.
     InternalError(String),
     ///This exception is thrown if any request is given an invalid parameter. E.g., if a required Date field is null.
@@ -1498,6 +1544,9 @@ impl UpdateSubscriberError {
                 let error_type = pieces.last().expect("Expected error type");
 
                 match *error_type {
+                    "DuplicateRecordException" => {
+                        UpdateSubscriberError::DuplicateRecord(String::from(error_message))
+                    }
                     "InternalErrorException" => {
                         UpdateSubscriberError::InternalError(String::from(error_message))
                     }
@@ -1546,6 +1595,7 @@ impl fmt::Display for UpdateSubscriberError {
 impl Error for UpdateSubscriberError {
     fn description(&self) -> &str {
         match *self {
+            UpdateSubscriberError::DuplicateRecord(ref cause) => cause,
             UpdateSubscriberError::InternalError(ref cause) => cause,
             UpdateSubscriberError::InvalidParameter(ref cause) => cause,
             UpdateSubscriberError::NotFound(ref cause) => cause,

@@ -205,6 +205,75 @@ impl AccessControlPolicySerializer {
     }
 }
 
+/// Container for information regarding the access control for replicas.
+#[derive(Default, Debug)]
+pub struct AccessControlTranslation {
+    /// The override value for the owner of the replica object.
+    pub owner: String,
+}
+
+struct AccessControlTranslationDeserializer;
+impl AccessControlTranslationDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<AccessControlTranslation, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = AccessControlTranslation::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "Owner" => {
+                        obj.owner = try!(OwnerOverrideDeserializer::deserialize("Owner", stack));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct AccessControlTranslationSerializer;
+impl AccessControlTranslationSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &AccessControlTranslation,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::start_element("Owner"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.owner
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 struct AccountIdDeserializer;
 impl AccountIdDeserializer {
     #[allow(unused_variables)]
@@ -1566,6 +1635,158 @@ impl CORSRulesSerializer {
     }
 }
 
+/// Describes how a CSV-formatted input object is formatted.
+#[derive(Default, Debug)]
+pub struct CSVInput {
+    /// Single character used to indicate a row should be ignored when present at the start of a row.
+    pub comments: Option<String>,
+    /// Value used to separate individual fields in a record.
+    pub field_delimiter: Option<String>,
+    /// Describes the first line of input. Valid values: None, Ignore, Use.
+    pub file_header_info: Option<String>,
+    /// Value used for escaping where the field delimiter is part of the value.
+    pub quote_character: Option<String>,
+    /// Single character used for escaping the quote character inside an already escaped value.
+    pub quote_escape_character: Option<String>,
+    /// Value used to separate individual records.
+    pub record_delimiter: Option<String>,
+}
+
+pub struct CSVInputSerializer;
+impl CSVInputSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &CSVInput,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.comments {
+            writer.write(xml::writer::XmlEvent::start_element("Comments"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.field_delimiter {
+            writer.write(xml::writer::XmlEvent::start_element("FieldDelimiter"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.file_header_info {
+            writer.write(xml::writer::XmlEvent::start_element("FileHeaderInfo"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.quote_character {
+            writer.write(xml::writer::XmlEvent::start_element("QuoteCharacter"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.quote_escape_character {
+            writer.write(xml::writer::XmlEvent::start_element("QuoteEscapeCharacter"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.record_delimiter {
+            writer.write(xml::writer::XmlEvent::start_element("RecordDelimiter"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Describes how CSV-formatted results are formatted.
+#[derive(Default, Debug)]
+pub struct CSVOutput {
+    /// Value used to separate individual fields in a record.
+    pub field_delimiter: Option<String>,
+    /// Value used for escaping where the field delimiter is part of the value.
+    pub quote_character: Option<String>,
+    /// Single character used for escaping the quote character inside an already escaped value.
+    pub quote_escape_character: Option<String>,
+    /// Indicates whether or not all output fields should be quoted.
+    pub quote_fields: Option<String>,
+    /// Value used to separate individual records.
+    pub record_delimiter: Option<String>,
+}
+
+pub struct CSVOutputSerializer;
+impl CSVOutputSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &CSVOutput,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.field_delimiter {
+            writer.write(xml::writer::XmlEvent::start_element("FieldDelimiter"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.quote_character {
+            writer.write(xml::writer::XmlEvent::start_element("QuoteCharacter"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.quote_escape_character {
+            writer.write(xml::writer::XmlEvent::start_element("QuoteEscapeCharacter"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.quote_fields {
+            writer.write(xml::writer::XmlEvent::start_element("QuoteFields"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.record_delimiter {
+            writer.write(xml::writer::XmlEvent::start_element("RecordDelimiter"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 struct CloudFunctionDeserializer;
 impl CloudFunctionDeserializer {
     #[allow(unused_variables)]
@@ -1757,6 +1978,27 @@ impl CodeDeserializer {
         Ok(obj)
     }
 }
+
+pub struct CommentsSerializer;
+impl CommentsSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct CommonPrefix {
     pub prefix: Option<String>,
@@ -2660,6 +2902,12 @@ pub struct DeleteBucketCorsRequest {
 }
 
 #[derive(Default, Debug)]
+pub struct DeleteBucketEncryptionRequest {
+    /// The name of the bucket containing the server-side encryption configuration to delete.
+    pub bucket: String,
+}
+
+#[derive(Default, Debug)]
 pub struct DeleteBucketInventoryConfigurationRequest {
     /// The name of the bucket containing the inventory configuration to delete.
     pub bucket: String,
@@ -3088,10 +3336,37 @@ impl DelimiterSerializer {
     }
 }
 
+pub struct DescriptionSerializer;
+impl DescriptionSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Container for replication destination information.
 #[derive(Default, Debug)]
 pub struct Destination {
+    /// Container for information regarding the access control for replicas.
+    pub access_control_translation: Option<AccessControlTranslation>,
+    /// Account ID of the destination bucket. Currently this is only being verified if Access Control Translation is enabled
+    pub account: Option<String>,
     /// Amazon resource name (ARN) of the bucket where you want Amazon S3 to store replicas of the object identified by the rule.
     pub bucket: String,
+    /// Container for information regarding encryption based configuration for replicas.
+    pub encryption_configuration: Option<EncryptionConfiguration>,
     /// The class of storage used to store the object.
     pub storage_class: Option<String>,
 }
@@ -3118,8 +3393,26 @@ impl DestinationDeserializer {
 
             match next_event {
                 DeserializerNext::Element(name) => match &name[..] {
+                    "AccessControlTranslation" => {
+                        obj.access_control_translation =
+                            Some(try!(AccessControlTranslationDeserializer::deserialize(
+                                "AccessControlTranslation",
+                                stack
+                            )));
+                    }
+                    "Account" => {
+                        obj.account =
+                            Some(try!(AccountIdDeserializer::deserialize("Account", stack)));
+                    }
                     "Bucket" => {
                         obj.bucket = try!(BucketNameDeserializer::deserialize("Bucket", stack));
+                    }
+                    "EncryptionConfiguration" => {
+                        obj.encryption_configuration =
+                            Some(try!(EncryptionConfigurationDeserializer::deserialize(
+                                "EncryptionConfiguration",
+                                stack
+                            )));
                     }
                     "StorageClass" => {
                         obj.storage_class = Some(try!(StorageClassDeserializer::deserialize(
@@ -3154,12 +3447,34 @@ impl DestinationSerializer {
         W: Write,
     {
         writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.access_control_translation {
+            &AccessControlTranslationSerializer::serialize(
+                &mut writer,
+                "AccessControlTranslation",
+                value,
+            )?;
+        }
+        if let Some(ref value) = obj.account {
+            writer.write(xml::writer::XmlEvent::start_element("Account"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
         writer.write(xml::writer::XmlEvent::start_element("Bucket"))?;
         writer.write(xml::writer::XmlEvent::characters(&format!(
             "{value}",
             value = obj.bucket
         )))?;
         writer.write(xml::writer::XmlEvent::end_element())?;
+        if let Some(ref value) = obj.encryption_configuration {
+            &EncryptionConfigurationSerializer::serialize(
+                &mut writer,
+                "EncryptionConfiguration",
+                value,
+            )?;
+        }
         if let Some(ref value) = obj.storage_class {
             writer.write(xml::writer::XmlEvent::start_element("StorageClass"))?;
             writer.write(xml::writer::XmlEvent::characters(&format!(
@@ -3308,6 +3623,128 @@ impl EncodingTypeSerializer {
             "{value}",
             value = obj.to_string()
         )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Describes the server-side encryption that will be applied to the restore results.
+#[derive(Default, Debug)]
+pub struct Encryption {
+    /// The server-side encryption algorithm used when storing job results in Amazon S3 (e.g., AES256, aws:kms).
+    pub encryption_type: String,
+    /// If the encryption type is aws:kms, this optional value can be used to specify the encryption context for the restore results.
+    pub kms_context: Option<String>,
+    /// If the encryption type is aws:kms, this optional value specifies the AWS KMS key ID to use for encryption of job results.
+    pub kms_key_id: Option<String>,
+}
+
+pub struct EncryptionSerializer;
+impl EncryptionSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &Encryption,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::start_element("EncryptionType"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.encryption_type
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        if let Some(ref value) = obj.kms_context {
+            writer.write(xml::writer::XmlEvent::start_element("KMSContext"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.kms_key_id {
+            writer.write(xml::writer::XmlEvent::start_element("KMSKeyId"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Container for information regarding encryption based configuration for replicas.
+#[derive(Default, Debug)]
+pub struct EncryptionConfiguration {
+    /// The id of the KMS key used to encrypt the replica object.
+    pub replica_kms_key_id: Option<String>,
+}
+
+struct EncryptionConfigurationDeserializer;
+impl EncryptionConfigurationDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<EncryptionConfiguration, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = EncryptionConfiguration::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "ReplicaKmsKeyID" => {
+                        obj.replica_kms_key_id = Some(try!(
+                            ReplicaKmsKeyIDDeserializer::deserialize("ReplicaKmsKeyID", stack)
+                        ));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct EncryptionConfigurationSerializer;
+impl EncryptionConfigurationSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &EncryptionConfiguration,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.replica_kms_key_id {
+            writer.write(xml::writer::XmlEvent::start_element("ReplicaKmsKeyID"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
         writer.write(xml::writer::XmlEvent::end_element())
     }
 }
@@ -3693,6 +4130,46 @@ impl ExposeHeadersSerializer {
     }
 }
 
+pub struct ExpressionSerializer;
+impl ExpressionSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct ExpressionTypeSerializer;
+impl ExpressionTypeSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 pub struct FetchOwnerSerializer;
 impl FetchOwnerSerializer {
     #[allow(unused_variables, warnings)]
@@ -3700,6 +4177,46 @@ impl FetchOwnerSerializer {
         mut writer: &mut EventWriter<W>,
         name: &str,
         obj: &bool,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct FieldDelimiterSerializer;
+impl FieldDelimiterSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct FileHeaderInfoSerializer;
+impl FileHeaderInfoSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
     ) -> Result<(), xml::writer::Error>
     where
         W: Write,
@@ -4129,6 +4646,61 @@ impl GetBucketCorsOutputDeserializer {
 }
 #[derive(Default, Debug)]
 pub struct GetBucketCorsRequest {
+    pub bucket: String,
+}
+
+#[derive(Default, Debug)]
+pub struct GetBucketEncryptionOutput {
+    pub server_side_encryption_configuration: Option<ServerSideEncryptionConfiguration>,
+}
+
+struct GetBucketEncryptionOutputDeserializer;
+impl GetBucketEncryptionOutputDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<GetBucketEncryptionOutput, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = GetBucketEncryptionOutput::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "ServerSideEncryptionConfiguration" => {
+                        obj.server_side_encryption_configuration = Some(try!(
+                            ServerSideEncryptionConfigurationDeserializer::deserialize(
+                                "ServerSideEncryptionConfiguration",
+                                stack
+                            )
+                        ));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+#[derive(Default, Debug)]
+pub struct GetBucketEncryptionRequest {
+    /// The name of the bucket from which the server-side encryption configuration is retrieved.
     pub bucket: String,
 }
 
@@ -5617,6 +6189,32 @@ impl InitiatorDeserializer {
         Ok(obj)
     }
 }
+/// Describes the serialization format of the object.
+#[derive(Default, Debug)]
+pub struct InputSerialization {
+    /// Describes the serialization of a CSV-encoded object.
+    pub csv: Option<CSVInput>,
+}
+
+pub struct InputSerializationSerializer;
+impl InputSerializationSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &InputSerialization,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.csv {
+            &CSVInputSerializer::serialize(&mut writer, "CSV", value)?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct InventoryConfiguration {
     /// Contains information about where to publish the inventory results.
@@ -5850,6 +6448,80 @@ impl InventoryDestinationSerializer {
             "S3BucketDestination",
             &obj.s3_bucket_destination,
         )?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Contains the type of server-side encryption used to encrypt the inventory results.
+#[derive(Default, Debug)]
+pub struct InventoryEncryption {
+    /// Specifies the use of SSE-KMS to encrypt delievered Inventory reports.
+    pub ssekms: Option<SSEKMS>,
+    /// Specifies the use of SSE-S3 to encrypt delievered Inventory reports.
+    pub sses3: Option<SSES3>,
+}
+
+struct InventoryEncryptionDeserializer;
+impl InventoryEncryptionDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<InventoryEncryption, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = InventoryEncryption::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "SSE-KMS" => {
+                        obj.ssekms = Some(try!(SSEKMSDeserializer::deserialize("SSE-KMS", stack)));
+                    }
+                    "SSE-S3" => {
+                        obj.sses3 = Some(try!(SSES3Deserializer::deserialize("SSE-S3", stack)));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct InventoryEncryptionSerializer;
+impl InventoryEncryptionSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &InventoryEncryption,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.ssekms {
+            &SSEKMSSerializer::serialize(&mut writer, "SSE-KMS", value)?;
+        }
+        if let Some(ref value) = obj.sses3 {
+            &SSES3Serializer::serialize(&mut writer, "SSE-S3", value)?;
+        }
         writer.write(xml::writer::XmlEvent::end_element())
     }
 }
@@ -6167,6 +6839,8 @@ pub struct InventoryS3BucketDestination {
     pub account_id: Option<String>,
     /// The Amazon resource name (ARN) of the bucket where inventory results will be published.
     pub bucket: String,
+    /// Contains the type of server-side encryption used to encrypt the inventory results.
+    pub encryption: Option<InventoryEncryption>,
     /// Specifies the output format of the inventory results.
     pub format: String,
     /// The prefix that is prepended to all inventory results.
@@ -6201,6 +6875,12 @@ impl InventoryS3BucketDestinationDeserializer {
                     }
                     "Bucket" => {
                         obj.bucket = try!(BucketNameDeserializer::deserialize("Bucket", stack));
+                    }
+                    "Encryption" => {
+                        obj.encryption = Some(try!(InventoryEncryptionDeserializer::deserialize(
+                            "Encryption",
+                            stack
+                        )));
                     }
                     "Format" => {
                         obj.format =
@@ -6250,6 +6930,9 @@ impl InventoryS3BucketDestinationSerializer {
             value = obj.bucket
         )))?;
         writer.write(xml::writer::XmlEvent::end_element())?;
+        if let Some(ref value) = obj.encryption {
+            &InventoryEncryptionSerializer::serialize(&mut writer, "Encryption", value)?;
+        }
         writer.write(xml::writer::XmlEvent::start_element("Format"))?;
         writer.write(xml::writer::XmlEvent::characters(&format!(
             "{value}",
@@ -6402,6 +7085,27 @@ impl IsTruncatedDeserializer {
         Ok(obj)
     }
 }
+
+pub struct KMSContextSerializer;
+impl KMSContextSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 struct KeyCountDeserializer;
 impl KeyCountDeserializer {
     #[allow(unused_variables)]
@@ -8144,6 +8848,27 @@ impl LocationDeserializer {
         Ok(obj)
     }
 }
+
+pub struct LocationPrefixSerializer;
+impl LocationPrefixSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct LoggingEnabled {
     /// Specifies the bucket where you want Amazon S3 to store server access logs. You can have your logs delivered to any bucket that you own, including the same bucket that is being logged. You can also configure multiple buckets to deliver their logs to the same target bucket. In this case you should choose a different TargetPrefix for each source bucket so that the delivered log files can be distinguished by key.
@@ -8466,6 +9191,85 @@ impl MessageDeserializer {
         Ok(obj)
     }
 }
+/// A metadata key-value pair to store with an object.
+#[derive(Default, Debug)]
+pub struct MetadataEntry {
+    pub name: Option<String>,
+    pub value: Option<String>,
+}
+
+pub struct MetadataEntrySerializer;
+impl MetadataEntrySerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &MetadataEntry,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.name {
+            writer.write(xml::writer::XmlEvent::start_element("Name"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.value {
+            writer.write(xml::writer::XmlEvent::start_element("Value"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct MetadataKeySerializer;
+impl MetadataKeySerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct MetadataValueSerializer;
+impl MetadataValueSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct MetricsAndOperator {
     /// The prefix used when evaluating an AND predicate.
@@ -9575,6 +10379,27 @@ impl ObjectDeserializer {
         Ok(obj)
     }
 }
+
+pub struct ObjectCannedACLSerializer;
+impl ObjectCannedACLSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct ObjectIdentifier {
     /// Key name of the object to delete.
@@ -9871,6 +10696,58 @@ impl ObjectVersionStorageClassDeserializer {
         Ok(obj)
     }
 }
+/// Describes the location where the restore job's output is stored.
+#[derive(Default, Debug)]
+pub struct OutputLocation {
+    /// Describes an S3 location that will receive the results of the restore request.
+    pub s3: Option<S3Location>,
+}
+
+pub struct OutputLocationSerializer;
+impl OutputLocationSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &OutputLocation,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.s3 {
+            &S3LocationSerializer::serialize(&mut writer, "S3", value)?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Describes how results of the Select job are serialized.
+#[derive(Default, Debug)]
+pub struct OutputSerialization {
+    /// Describes the serialization of CSV-encoded Select results.
+    pub csv: Option<CSVOutput>,
+}
+
+pub struct OutputSerializationSerializer;
+impl OutputSerializationSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &OutputSerialization,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.csv {
+            &CSVOutputSerializer::serialize(&mut writer, "CSV", value)?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct Owner {
     pub display_name: Option<String>,
@@ -9951,6 +10828,41 @@ impl OwnerSerializer {
             )));
             writer.write(xml::writer::XmlEvent::end_element())?;
         }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+struct OwnerOverrideDeserializer;
+impl OwnerOverrideDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<String, XmlParseError> {
+        try!(start_element(tag_name, stack));
+        let obj = try!(characters(stack));
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct OwnerOverrideSerializer;
+impl OwnerOverrideSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
         writer.write(xml::writer::XmlEvent::end_element())
     }
 }
@@ -10321,6 +11233,15 @@ pub struct PutBucketCorsRequest {
 }
 
 #[derive(Default, Debug)]
+pub struct PutBucketEncryptionRequest {
+    /// The name of the bucket for which the server-side encryption configuration is set.
+    pub bucket: String,
+    /// The base64-encoded 128-bit MD5 digest of the server-side encryption configuration.
+    pub content_md5: Option<String>,
+    pub server_side_encryption_configuration: ServerSideEncryptionConfiguration,
+}
+
+#[derive(Default, Debug)]
 pub struct PutBucketInventoryConfigurationRequest {
     /// The name of the bucket where the inventory configuration will be stored.
     pub bucket: String,
@@ -10376,6 +11297,8 @@ pub struct PutBucketNotificationRequest {
 #[derive(Default, Debug)]
 pub struct PutBucketPolicyRequest {
     pub bucket: String,
+    /// Set this parameter to true to confirm that you want to remove your permissions to change this bucket policy in the future.
+    pub confirm_remove_self_bucket_access: Option<bool>,
     pub content_md5: Option<String>,
     /// The bucket policy as a JSON document.
     pub policy: String,
@@ -10870,6 +11793,86 @@ impl QuietSerializer {
     }
 }
 
+pub struct QuoteCharacterSerializer;
+impl QuoteCharacterSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct QuoteEscapeCharacterSerializer;
+impl QuoteEscapeCharacterSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct QuoteFieldsSerializer;
+impl QuoteFieldsSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct RecordDelimiterSerializer;
+impl RecordDelimiterSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct Redirect {
     /// The host name to use in the redirect request.
@@ -11154,6 +12157,41 @@ impl ReplaceKeyWithSerializer {
     }
 }
 
+struct ReplicaKmsKeyIDDeserializer;
+impl ReplicaKmsKeyIDDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<String, XmlParseError> {
+        try!(start_element(tag_name, stack));
+        let obj = try!(characters(stack));
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct ReplicaKmsKeyIDSerializer;
+impl ReplicaKmsKeyIDSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 /// Container for replication rules. You can add as many as 1,000 rules. Total replication configuration size can be up to 2 MB.
 #[derive(Default, Debug)]
 pub struct ReplicationConfiguration {
@@ -11229,13 +12267,17 @@ impl ReplicationConfigurationSerializer {
     }
 }
 
+/// Container for information about a particular replication rule.
 #[derive(Default, Debug)]
 pub struct ReplicationRule {
+    /// Container for replication destination information.
     pub destination: Destination,
     /// Unique identifier for the rule. The value cannot be longer than 255 characters.
     pub id: Option<String>,
     /// Object keyname prefix identifying one or more objects to which the rule applies. Maximum prefix length can be up to 1,024 characters. Overlapping prefixes are not supported.
     pub prefix: String,
+    /// Container for filters that define which source objects should be replicated.
+    pub source_selection_criteria: Option<SourceSelectionCriteria>,
     /// The rule is ignored if status is not Enabled.
     pub status: String,
 }
@@ -11271,6 +12313,13 @@ impl ReplicationRuleDeserializer {
                     }
                     "Prefix" => {
                         obj.prefix = try!(PrefixDeserializer::deserialize("Prefix", stack));
+                    }
+                    "SourceSelectionCriteria" => {
+                        obj.source_selection_criteria =
+                            Some(try!(SourceSelectionCriteriaDeserializer::deserialize(
+                                "SourceSelectionCriteria",
+                                stack
+                            )));
                     }
                     "Status" => {
                         obj.status = try!(ReplicationRuleStatusDeserializer::deserialize(
@@ -11320,6 +12369,13 @@ impl ReplicationRuleSerializer {
             value = obj.prefix
         )))?;
         writer.write(xml::writer::XmlEvent::end_element())?;
+        if let Some(ref value) = obj.source_selection_criteria {
+            &SourceSelectionCriteriaSerializer::serialize(
+                &mut writer,
+                "SourceSelectionCriteria",
+                value,
+            )?;
+        }
         writer.write(xml::writer::XmlEvent::start_element("Status"))?;
         writer.write(xml::writer::XmlEvent::characters(&format!(
             "{value}",
@@ -11563,6 +12619,8 @@ impl ResponseExpiresSerializer {
 #[derive(Default, Debug)]
 pub struct RestoreObjectOutput {
     pub request_charged: Option<String>,
+    /// Indicates the path in the provided S3 output location where Select results will be restored to.
+    pub restore_output_path: Option<String>,
 }
 
 struct RestoreObjectOutputDeserializer;
@@ -11590,12 +12648,23 @@ pub struct RestoreObjectRequest {
     pub version_id: Option<String>,
 }
 
+/// Container for restore job parameters.
 #[derive(Default, Debug)]
 pub struct RestoreRequest {
-    /// Lifetime of the active copy in days
-    pub days: i64,
-    /// Glacier related prameters pertaining to this job.
+    /// Lifetime of the active copy in days. Do not use with restores that specify OutputLocation.
+    pub days: Option<i64>,
+    /// The optional description for the job.
+    pub description: Option<String>,
+    /// Glacier related parameters pertaining to this job. Do not use with restores that specify OutputLocation.
     pub glacier_job_parameters: Option<GlacierJobParameters>,
+    /// Describes the location where the restore job's output is stored.
+    pub output_location: Option<OutputLocation>,
+    /// Describes the parameters for Select job types.
+    pub select_parameters: Option<SelectParameters>,
+    /// Glacier retrieval tier at which the restore will be processed.
+    pub tier: Option<String>,
+    /// Type of restore request.
+    pub type_: Option<String>,
 }
 
 pub struct RestoreRequestSerializer;
@@ -11610,15 +12679,67 @@ impl RestoreRequestSerializer {
         W: Write,
     {
         writer.write(xml::writer::XmlEvent::start_element(name))?;
-        writer.write(xml::writer::XmlEvent::start_element("Days"))?;
-        writer.write(xml::writer::XmlEvent::characters(&format!(
-            "{value}",
-            value = obj.days
-        )))?;
-        writer.write(xml::writer::XmlEvent::end_element())?;
+        if let Some(ref value) = obj.days {
+            writer.write(xml::writer::XmlEvent::start_element("Days"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.description {
+            writer.write(xml::writer::XmlEvent::start_element("Description"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
         if let Some(ref value) = obj.glacier_job_parameters {
             &GlacierJobParametersSerializer::serialize(&mut writer, "GlacierJobParameters", value)?;
         }
+        if let Some(ref value) = obj.output_location {
+            &OutputLocationSerializer::serialize(&mut writer, "OutputLocation", value)?;
+        }
+        if let Some(ref value) = obj.select_parameters {
+            &SelectParametersSerializer::serialize(&mut writer, "SelectParameters", value)?;
+        }
+        if let Some(ref value) = obj.tier {
+            writer.write(xml::writer::XmlEvent::start_element("Tier"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.type_ {
+            writer.write(xml::writer::XmlEvent::start_element("Type"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+pub struct RestoreRequestTypeSerializer;
+impl RestoreRequestTypeSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
         writer.write(xml::writer::XmlEvent::end_element())
     }
 }
@@ -12065,6 +13186,586 @@ impl S3KeyFilterSerializer {
     }
 }
 
+/// Describes an S3 location that will receive the results of the restore request.
+#[derive(Default, Debug)]
+pub struct S3Location {
+    /// A list of grants that control access to the staged results.
+    pub access_control_list: Option<Vec<Grant>>,
+    /// The name of the bucket where the restore results will be placed.
+    pub bucket_name: String,
+    /// The canned ACL to apply to the restore results.
+    pub canned_acl: Option<String>,
+    pub encryption: Option<Encryption>,
+    /// The prefix that is prepended to the restore results for this request.
+    pub prefix: String,
+    /// The class of storage used to store the restore results.
+    pub storage_class: Option<String>,
+    /// The tag-set that is applied to the restore results.
+    pub tagging: Option<Tagging>,
+    /// A list of metadata to store with the restore results in S3.
+    pub user_metadata: Option<Vec<MetadataEntry>>,
+}
+
+pub struct S3LocationSerializer;
+impl S3LocationSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &S3Location,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.access_control_list {
+            &GrantsSerializer::serialize(&mut writer, "AccessControlList", value)?;
+        }
+        writer.write(xml::writer::XmlEvent::start_element("BucketName"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.bucket_name
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        if let Some(ref value) = obj.canned_acl {
+            writer.write(xml::writer::XmlEvent::start_element("CannedACL"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.encryption {
+            &EncryptionSerializer::serialize(&mut writer, "Encryption", value)?;
+        }
+        writer.write(xml::writer::XmlEvent::start_element("Prefix"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.prefix
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        if let Some(ref value) = obj.storage_class {
+            writer.write(xml::writer::XmlEvent::start_element("StorageClass"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        if let Some(ref value) = obj.tagging {
+            &TaggingSerializer::serialize(&mut writer, "Tagging", value)?;
+        }
+        if let Some(ref value) = obj.user_metadata {
+            &UserMetadataSerializer::serialize(&mut writer, "UserMetadata", value)?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Specifies the use of SSE-KMS to encrypt delievered Inventory reports.
+#[derive(Default, Debug)]
+pub struct SSEKMS {
+    /// Specifies the ID of the AWS Key Management Service (KMS) master encryption key to use for encrypting Inventory reports.
+    pub key_id: String,
+}
+
+struct SSEKMSDeserializer;
+impl SSEKMSDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<SSEKMS, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = SSEKMS::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "KeyId" => {
+                        obj.key_id = try!(SSEKMSKeyIdDeserializer::deserialize("KeyId", stack));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct SSEKMSSerializer;
+impl SSEKMSSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &SSEKMS,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::start_element("KeyId"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.key_id
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+struct SSEKMSKeyIdDeserializer;
+impl SSEKMSKeyIdDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<String, XmlParseError> {
+        try!(start_element(tag_name, stack));
+        let obj = try!(characters(stack));
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct SSEKMSKeyIdSerializer;
+impl SSEKMSKeyIdSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Specifies the use of SSE-S3 to encrypt delievered Inventory reports.
+#[derive(Default, Debug)]
+pub struct SSES3;
+
+struct SSES3Deserializer;
+impl SSES3Deserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<SSES3, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let obj = SSES3::default();
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct SSES3Serializer;
+impl SSES3Serializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &SSES3,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Describes the parameters for Select job types.
+#[derive(Default, Debug)]
+pub struct SelectParameters {
+    /// The expression that is used to query the object.
+    pub expression: String,
+    /// The type of the provided expression (e.g., SQL).
+    pub expression_type: String,
+    /// Describes the serialization format of the object.
+    pub input_serialization: InputSerialization,
+    /// Describes how the results of the Select job are serialized.
+    pub output_serialization: OutputSerialization,
+}
+
+pub struct SelectParametersSerializer;
+impl SelectParametersSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &SelectParameters,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::start_element("Expression"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.expression
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        writer.write(xml::writer::XmlEvent::start_element("ExpressionType"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.expression_type
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        InputSerializationSerializer::serialize(
+            &mut writer,
+            "InputSerialization",
+            &obj.input_serialization,
+        )?;
+        OutputSerializationSerializer::serialize(
+            &mut writer,
+            "OutputSerialization",
+            &obj.output_serialization,
+        )?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+struct ServerSideEncryptionDeserializer;
+impl ServerSideEncryptionDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<String, XmlParseError> {
+        try!(start_element(tag_name, stack));
+        let obj = try!(characters(stack));
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct ServerSideEncryptionSerializer;
+impl ServerSideEncryptionSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Describes the default server-side encryption to apply to new objects in the bucket. If Put Object request does not specify any server-side encryption, this default encryption will be applied.
+#[derive(Default, Debug)]
+pub struct ServerSideEncryptionByDefault {
+    /// KMS master key ID to use for the default encryption. This parameter is allowed if SSEAlgorithm is aws:kms.
+    pub kms_master_key_id: Option<String>,
+    /// Server-side encryption algorithm to use for the default encryption.
+    pub sse_algorithm: String,
+}
+
+struct ServerSideEncryptionByDefaultDeserializer;
+impl ServerSideEncryptionByDefaultDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<ServerSideEncryptionByDefault, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = ServerSideEncryptionByDefault::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "KMSMasterKeyID" => {
+                        obj.kms_master_key_id = Some(try!(SSEKMSKeyIdDeserializer::deserialize(
+                            "KMSMasterKeyID",
+                            stack
+                        )));
+                    }
+                    "SSEAlgorithm" => {
+                        obj.sse_algorithm = try!(ServerSideEncryptionDeserializer::deserialize(
+                            "SSEAlgorithm",
+                            stack
+                        ));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct ServerSideEncryptionByDefaultSerializer;
+impl ServerSideEncryptionByDefaultSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &ServerSideEncryptionByDefault,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.kms_master_key_id {
+            writer.write(xml::writer::XmlEvent::start_element("KMSMasterKeyID"))?;
+            writer.write(xml::writer::XmlEvent::characters(&format!(
+                "{value}",
+                value = value
+            )));
+            writer.write(xml::writer::XmlEvent::end_element())?;
+        }
+        writer.write(xml::writer::XmlEvent::start_element("SSEAlgorithm"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.sse_algorithm
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Container for server-side encryption configuration rules. Currently S3 supports one rule only.
+#[derive(Default, Debug)]
+pub struct ServerSideEncryptionConfiguration {
+    /// Container for information about a particular server-side encryption configuration rule.
+    pub rules: Vec<ServerSideEncryptionRule>,
+}
+
+struct ServerSideEncryptionConfigurationDeserializer;
+impl ServerSideEncryptionConfigurationDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<ServerSideEncryptionConfiguration, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = ServerSideEncryptionConfiguration::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "Rule" => {
+                        obj.rules = try!(ServerSideEncryptionRulesDeserializer::deserialize(
+                            "Rule",
+                            stack
+                        ));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct ServerSideEncryptionConfigurationSerializer;
+impl ServerSideEncryptionConfigurationSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &ServerSideEncryptionConfiguration,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        ServerSideEncryptionRulesSerializer::serialize(&mut writer, "Rule", &obj.rules)?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Container for information about a particular server-side encryption configuration rule.
+#[derive(Default, Debug)]
+pub struct ServerSideEncryptionRule {
+    /// Describes the default server-side encryption to apply to new objects in the bucket. If Put Object request does not specify any server-side encryption, this default encryption will be applied.
+    pub apply_server_side_encryption_by_default: Option<ServerSideEncryptionByDefault>,
+}
+
+struct ServerSideEncryptionRuleDeserializer;
+impl ServerSideEncryptionRuleDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<ServerSideEncryptionRule, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = ServerSideEncryptionRule::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "ApplyServerSideEncryptionByDefault" => {
+                        obj.apply_server_side_encryption_by_default = Some(try!(
+                            ServerSideEncryptionByDefaultDeserializer::deserialize(
+                                "ApplyServerSideEncryptionByDefault",
+                                stack
+                            )
+                        ));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct ServerSideEncryptionRuleSerializer;
+impl ServerSideEncryptionRuleSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &ServerSideEncryptionRule,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.apply_server_side_encryption_by_default {
+            &ServerSideEncryptionByDefaultSerializer::serialize(
+                &mut writer,
+                "ApplyServerSideEncryptionByDefault",
+                value,
+            )?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+struct ServerSideEncryptionRulesDeserializer;
+impl ServerSideEncryptionRulesDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<Vec<ServerSideEncryptionRule>, XmlParseError> {
+        let mut obj = vec![];
+
+        loop {
+            let consume_next_tag = match stack.peek() {
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => name.local_name == tag_name,
+                _ => false,
+            };
+
+            if consume_next_tag {
+                obj.push(try!(ServerSideEncryptionRuleDeserializer::deserialize(
+                    tag_name,
+                    stack
+                )));
+            } else {
+                break;
+            }
+        }
+
+        Ok(obj)
+    }
+}
+
+pub struct ServerSideEncryptionRulesSerializer;
+impl ServerSideEncryptionRulesSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &Vec<ServerSideEncryptionRule>,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        for element in obj {
+            ServerSideEncryptionRuleSerializer::serialize(writer, name, element)?;
+        }
+        Ok(())
+    }
+}
+
 struct SizeDeserializer;
 impl SizeDeserializer {
     #[allow(unused_variables)]
@@ -12079,6 +13780,187 @@ impl SizeDeserializer {
         Ok(obj)
     }
 }
+/// Container for filters that define which source objects should be replicated.
+#[derive(Default, Debug)]
+pub struct SourceSelectionCriteria {
+    /// Container for filter information of selection of KMS Encrypted S3 objects.
+    pub sse_kms_encrypted_objects: Option<SseKmsEncryptedObjects>,
+}
+
+struct SourceSelectionCriteriaDeserializer;
+impl SourceSelectionCriteriaDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<SourceSelectionCriteria, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = SourceSelectionCriteria::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "SseKmsEncryptedObjects" => {
+                        obj.sse_kms_encrypted_objects =
+                            Some(try!(SseKmsEncryptedObjectsDeserializer::deserialize(
+                                "SseKmsEncryptedObjects",
+                                stack
+                            )));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct SourceSelectionCriteriaSerializer;
+impl SourceSelectionCriteriaSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &SourceSelectionCriteria,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        if let Some(ref value) = obj.sse_kms_encrypted_objects {
+            &SseKmsEncryptedObjectsSerializer::serialize(
+                &mut writer,
+                "SseKmsEncryptedObjects",
+                value,
+            )?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+/// Container for filter information of selection of KMS Encrypted S3 objects.
+#[derive(Default, Debug)]
+pub struct SseKmsEncryptedObjects {
+    /// The replication for KMS encrypted S3 objects is disabled if status is not Enabled.
+    pub status: String,
+}
+
+struct SseKmsEncryptedObjectsDeserializer;
+impl SseKmsEncryptedObjectsDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<SseKmsEncryptedObjects, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = SseKmsEncryptedObjects::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "Status" => {
+                        obj.status = try!(SseKmsEncryptedObjectsStatusDeserializer::deserialize(
+                            "Status",
+                            stack
+                        ));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct SseKmsEncryptedObjectsSerializer;
+impl SseKmsEncryptedObjectsSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &SseKmsEncryptedObjects,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::start_element("Status"))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.status
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
+struct SseKmsEncryptedObjectsStatusDeserializer;
+impl SseKmsEncryptedObjectsStatusDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<String, XmlParseError> {
+        try!(start_element(tag_name, stack));
+        let obj = try!(characters(stack));
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+pub struct SseKmsEncryptedObjectsStatusSerializer;
+impl SseKmsEncryptedObjectsStatusSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &String,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        writer.write(xml::writer::XmlEvent::characters(&format!(
+            "{value}",
+            value = obj.to_string()
+        )))?;
+        writer.write(xml::writer::XmlEvent::end_element())
+    }
+}
+
 struct StartAfterDeserializer;
 impl StartAfterDeserializer {
     #[allow(unused_variables)]
@@ -13502,6 +15384,26 @@ pub struct UploadPartRequest {
     pub upload_id: String,
 }
 
+pub struct UserMetadataSerializer;
+impl UserMetadataSerializer {
+    #[allow(unused_variables, warnings)]
+    pub fn serialize<W>(
+        mut writer: &mut EventWriter<W>,
+        name: &str,
+        obj: &Vec<MetadataEntry>,
+    ) -> Result<(), xml::writer::Error>
+    where
+        W: Write,
+    {
+        writer.write(xml::writer::XmlEvent::start_element(name))?;
+        for element in obj {
+            MetadataEntrySerializer::serialize(writer, "MetadataEntry", element)?;
+        }
+        writer.write(xml::writer::XmlEvent::end_element())?;
+        Ok(())
+    }
+}
+
 struct ValueDeserializer;
 impl ValueDeserializer {
     #[allow(unused_variables)]
@@ -14193,6 +16095,72 @@ impl Error for DeleteBucketCorsError {
             DeleteBucketCorsError::Credentials(ref err) => err.description(),
             DeleteBucketCorsError::HttpDispatch(ref dispatch_error) => dispatch_error.description(),
             DeleteBucketCorsError::Unknown(ref cause) => cause,
+        }
+    }
+}
+/// Errors returned by DeleteBucketEncryption
+#[derive(Debug, PartialEq)]
+pub enum DeleteBucketEncryptionError {
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl DeleteBucketEncryptionError {
+    pub fn from_body(body: &str) -> DeleteBucketEncryptionError {
+        let reader = EventReader::new(body.as_bytes());
+        let mut stack = XmlResponse::new(reader.into_iter().peekable());
+        let _start_document = stack.next();
+        let _response_envelope = stack.next();
+        match XmlErrorDeserializer::deserialize("Error", &mut stack) {
+            Ok(parsed_error) => match &parsed_error.code[..] {
+                _ => DeleteBucketEncryptionError::Unknown(String::from(body)),
+            },
+            Err(_) => DeleteBucketEncryptionError::Unknown(body.to_string()),
+        }
+    }
+}
+
+impl From<XmlParseError> for DeleteBucketEncryptionError {
+    fn from(err: XmlParseError) -> DeleteBucketEncryptionError {
+        let XmlParseError(message) = err;
+        DeleteBucketEncryptionError::Unknown(message.to_string())
+    }
+}
+impl From<CredentialsError> for DeleteBucketEncryptionError {
+    fn from(err: CredentialsError) -> DeleteBucketEncryptionError {
+        DeleteBucketEncryptionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for DeleteBucketEncryptionError {
+    fn from(err: HttpDispatchError) -> DeleteBucketEncryptionError {
+        DeleteBucketEncryptionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for DeleteBucketEncryptionError {
+    fn from(err: io::Error) -> DeleteBucketEncryptionError {
+        DeleteBucketEncryptionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for DeleteBucketEncryptionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for DeleteBucketEncryptionError {
+    fn description(&self) -> &str {
+        match *self {
+            DeleteBucketEncryptionError::Validation(ref cause) => cause,
+            DeleteBucketEncryptionError::Credentials(ref err) => err.description(),
+            DeleteBucketEncryptionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            DeleteBucketEncryptionError::Unknown(ref cause) => cause,
         }
     }
 }
@@ -15109,6 +17077,72 @@ impl Error for GetBucketCorsError {
             GetBucketCorsError::Credentials(ref err) => err.description(),
             GetBucketCorsError::HttpDispatch(ref dispatch_error) => dispatch_error.description(),
             GetBucketCorsError::Unknown(ref cause) => cause,
+        }
+    }
+}
+/// Errors returned by GetBucketEncryption
+#[derive(Debug, PartialEq)]
+pub enum GetBucketEncryptionError {
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl GetBucketEncryptionError {
+    pub fn from_body(body: &str) -> GetBucketEncryptionError {
+        let reader = EventReader::new(body.as_bytes());
+        let mut stack = XmlResponse::new(reader.into_iter().peekable());
+        let _start_document = stack.next();
+        let _response_envelope = stack.next();
+        match XmlErrorDeserializer::deserialize("Error", &mut stack) {
+            Ok(parsed_error) => match &parsed_error.code[..] {
+                _ => GetBucketEncryptionError::Unknown(String::from(body)),
+            },
+            Err(_) => GetBucketEncryptionError::Unknown(body.to_string()),
+        }
+    }
+}
+
+impl From<XmlParseError> for GetBucketEncryptionError {
+    fn from(err: XmlParseError) -> GetBucketEncryptionError {
+        let XmlParseError(message) = err;
+        GetBucketEncryptionError::Unknown(message.to_string())
+    }
+}
+impl From<CredentialsError> for GetBucketEncryptionError {
+    fn from(err: CredentialsError) -> GetBucketEncryptionError {
+        GetBucketEncryptionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for GetBucketEncryptionError {
+    fn from(err: HttpDispatchError) -> GetBucketEncryptionError {
+        GetBucketEncryptionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for GetBucketEncryptionError {
+    fn from(err: io::Error) -> GetBucketEncryptionError {
+        GetBucketEncryptionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for GetBucketEncryptionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for GetBucketEncryptionError {
+    fn description(&self) -> &str {
+        match *self {
+            GetBucketEncryptionError::Validation(ref cause) => cause,
+            GetBucketEncryptionError::Credentials(ref err) => err.description(),
+            GetBucketEncryptionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            GetBucketEncryptionError::Unknown(ref cause) => cause,
         }
     }
 }
@@ -17286,6 +19320,72 @@ impl Error for PutBucketCorsError {
         }
     }
 }
+/// Errors returned by PutBucketEncryption
+#[derive(Debug, PartialEq)]
+pub enum PutBucketEncryptionError {
+    /// An error occurred dispatching the HTTP request
+    HttpDispatch(HttpDispatchError),
+    /// An error was encountered with AWS credentials.
+    Credentials(CredentialsError),
+    /// A validation error occurred.  Details from AWS are provided.
+    Validation(String),
+    /// An unknown error occurred.  The raw HTTP response is provided.
+    Unknown(String),
+}
+
+impl PutBucketEncryptionError {
+    pub fn from_body(body: &str) -> PutBucketEncryptionError {
+        let reader = EventReader::new(body.as_bytes());
+        let mut stack = XmlResponse::new(reader.into_iter().peekable());
+        let _start_document = stack.next();
+        let _response_envelope = stack.next();
+        match XmlErrorDeserializer::deserialize("Error", &mut stack) {
+            Ok(parsed_error) => match &parsed_error.code[..] {
+                _ => PutBucketEncryptionError::Unknown(String::from(body)),
+            },
+            Err(_) => PutBucketEncryptionError::Unknown(body.to_string()),
+        }
+    }
+}
+
+impl From<XmlParseError> for PutBucketEncryptionError {
+    fn from(err: XmlParseError) -> PutBucketEncryptionError {
+        let XmlParseError(message) = err;
+        PutBucketEncryptionError::Unknown(message.to_string())
+    }
+}
+impl From<CredentialsError> for PutBucketEncryptionError {
+    fn from(err: CredentialsError) -> PutBucketEncryptionError {
+        PutBucketEncryptionError::Credentials(err)
+    }
+}
+impl From<HttpDispatchError> for PutBucketEncryptionError {
+    fn from(err: HttpDispatchError) -> PutBucketEncryptionError {
+        PutBucketEncryptionError::HttpDispatch(err)
+    }
+}
+impl From<io::Error> for PutBucketEncryptionError {
+    fn from(err: io::Error) -> PutBucketEncryptionError {
+        PutBucketEncryptionError::HttpDispatch(HttpDispatchError::from(err))
+    }
+}
+impl fmt::Display for PutBucketEncryptionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for PutBucketEncryptionError {
+    fn description(&self) -> &str {
+        match *self {
+            PutBucketEncryptionError::Validation(ref cause) => cause,
+            PutBucketEncryptionError::Credentials(ref err) => err.description(),
+            PutBucketEncryptionError::HttpDispatch(ref dispatch_error) => {
+                dispatch_error.description()
+            }
+            PutBucketEncryptionError::Unknown(ref cause) => cause,
+        }
+    }
+}
 /// Errors returned by PutBucketInventoryConfiguration
 #[derive(Debug, PartialEq)]
 pub enum PutBucketInventoryConfigurationError {
@@ -18576,6 +20676,12 @@ pub trait S3 {
         input: &DeleteBucketCorsRequest,
     ) -> Result<(), DeleteBucketCorsError>;
 
+    #[doc = "Deletes the server-side encryption configuration from the bucket."]
+    fn delete_bucket_encryption(
+        &self,
+        input: &DeleteBucketEncryptionRequest,
+    ) -> Result<(), DeleteBucketEncryptionError>;
+
     #[doc = "Deletes an inventory configuration (identified by the inventory ID) from the bucket."]
     fn delete_bucket_inventory_configuration(
         &self,
@@ -18659,6 +20765,12 @@ pub trait S3 {
         &self,
         input: &GetBucketCorsRequest,
     ) -> Result<GetBucketCorsOutput, GetBucketCorsError>;
+
+    #[doc = "Returns the server-side encryption configuration of a bucket."]
+    fn get_bucket_encryption(
+        &self,
+        input: &GetBucketEncryptionRequest,
+    ) -> Result<GetBucketEncryptionOutput, GetBucketEncryptionError>;
 
     #[doc = "Returns an inventory configuration (identified by the inventory ID) from the bucket."]
     fn get_bucket_inventory_configuration(
@@ -18836,6 +20948,12 @@ pub trait S3 {
 
     #[doc = "Sets the cors configuration for a bucket."]
     fn put_bucket_cors(&self, input: &PutBucketCorsRequest) -> Result<(), PutBucketCorsError>;
+
+    #[doc="Creates a new server-side encryption configuration (or replaces an existing one, if present)."]
+    fn put_bucket_encryption(
+        &self,
+        input: &PutBucketEncryptionRequest,
+    ) -> Result<(), PutBucketEncryptionError>;
 
     #[doc = "Adds an inventory configuration (identified by the inventory ID) from the bucket."]
     fn put_bucket_inventory_configuration(
@@ -19758,6 +21876,40 @@ where
         }
     }
 
+    #[doc = "Deletes the server-side encryption configuration from the bucket."]
+    #[allow(unused_variables, warnings)]
+    fn delete_bucket_encryption(
+        &self,
+        input: &DeleteBucketEncryptionRequest,
+    ) -> Result<(), DeleteBucketEncryptionError> {
+        let request_uri = format!("/{bucket}", bucket = input.bucket);
+
+        let mut request = SignedRequest::new("DELETE", "s3", &self.region, &request_uri);
+
+        let mut params = Params::new();
+        params.put_key("encryption");
+        request.set_params(params);
+
+        request.sign_with_plus(&try!(self.credentials_provider.credentials()), true);
+
+        let mut response = try!(self.dispatcher.dispatch(&request));
+
+        match response.status {
+            StatusCode::Ok | StatusCode::NoContent | StatusCode::PartialContent => {
+                let result = ();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(DeleteBucketEncryptionError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
     #[doc = "Deletes an inventory configuration (identified by the inventory ID) from the bucket."]
     #[allow(unused_variables, warnings)]
     fn delete_bucket_inventory_configuration(
@@ -20405,6 +22557,58 @@ where
                 let mut body: Vec<u8> = Vec::new();
                 try!(response.body.read_to_end(&mut body));
                 Err(GetBucketCorsError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
+    #[doc = "Returns the server-side encryption configuration of a bucket."]
+    #[allow(unused_variables, warnings)]
+    fn get_bucket_encryption(
+        &self,
+        input: &GetBucketEncryptionRequest,
+    ) -> Result<GetBucketEncryptionOutput, GetBucketEncryptionError> {
+        let request_uri = format!("/{bucket}", bucket = input.bucket);
+
+        let mut request = SignedRequest::new("GET", "s3", &self.region, &request_uri);
+
+        let mut params = Params::new();
+        params.put_key("encryption");
+        request.set_params(params);
+
+        request.sign_with_plus(&try!(self.credentials_provider.credentials()), true);
+
+        let mut response = try!(self.dispatcher.dispatch(&request));
+
+        match response.status {
+            StatusCode::Ok | StatusCode::NoContent | StatusCode::PartialContent => {
+                let mut result;
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+
+                if body.is_empty() {
+                    result = GetBucketEncryptionOutput::default();
+                } else {
+                    let reader = EventReader::new_with_config(
+                        body.as_slice(),
+                        ParserConfig::new().trim_whitespace(true),
+                    );
+                    let mut stack = XmlResponse::new(reader.into_iter().peekable());
+                    let _start_document = stack.next();
+                    let actual_tag_name = try!(peek_at_name(&mut stack));
+                    result = try!(GetBucketEncryptionOutputDeserializer::deserialize(
+                        &actual_tag_name,
+                        &mut stack
+                    ));
+                }
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(GetBucketEncryptionError::from_body(
                     String::from_utf8_lossy(&body).as_ref(),
                 ))
             }
@@ -22538,6 +24742,53 @@ where
         }
     }
 
+    #[doc="Creates a new server-side encryption configuration (or replaces an existing one, if present)."]
+                    #[allow(unused_variables, warnings)]
+    fn put_bucket_encryption(
+        &self,
+        input: &PutBucketEncryptionRequest,
+    ) -> Result<(), PutBucketEncryptionError> {
+        let request_uri = format!("/{bucket}", bucket = input.bucket);
+
+        let mut request = SignedRequest::new("PUT", "s3", &self.region, &request_uri);
+
+        if let Some(ref content_md5) = input.content_md5 {
+            request.add_header("Content-MD5", &content_md5.to_string());
+        }
+        let mut params = Params::new();
+        params.put_key("encryption");
+        request.set_params(params);
+        let mut payload: Vec<u8>;
+        let mut writer = EventWriter::new(Vec::new());
+        ServerSideEncryptionConfigurationSerializer::serialize(
+            &mut writer,
+            "ServerSideEncryptionConfiguration",
+            &input.server_side_encryption_configuration,
+        );
+        payload = writer.into_inner();
+
+        request.set_payload(Some(payload));
+
+        request.sign_with_plus(&try!(self.credentials_provider.credentials()), true);
+
+        let mut response = try!(self.dispatcher.dispatch(&request));
+
+        match response.status {
+            StatusCode::Ok | StatusCode::NoContent | StatusCode::PartialContent => {
+                let result = ();
+
+                Ok(result)
+            }
+            _ => {
+                let mut body: Vec<u8> = Vec::new();
+                try!(response.body.read_to_end(&mut body));
+                Err(PutBucketEncryptionError::from_body(
+                    String::from_utf8_lossy(&body).as_ref(),
+                ))
+            }
+        }
+    }
+
     #[doc = "Adds an inventory configuration (identified by the inventory ID) from the bucket."]
     #[allow(unused_variables, warnings)]
     fn put_bucket_inventory_configuration(
@@ -22878,6 +25129,14 @@ where
         let request_uri = format!("/{bucket}", bucket = input.bucket);
 
         let mut request = SignedRequest::new("PUT", "s3", &self.region, &request_uri);
+
+        if let Some(ref confirm_remove_self_bucket_access) = input.confirm_remove_self_bucket_access
+        {
+            request.add_header(
+                "x-amz-confirm-remove-self-bucket-access",
+                &confirm_remove_self_bucket_access.to_string(),
+            );
+        }
 
         if let Some(ref content_md5) = input.content_md5 {
             request.add_header("Content-MD5", &content_md5.to_string());
@@ -23588,6 +25847,11 @@ where
                 if let Some(request_charged) = response.headers.get("x-amz-request-charged") {
                     let value = request_charged.to_owned();
                     result.request_charged = Some(value)
+                };
+                if let Some(restore_output_path) = response.headers.get("x-amz-restore-output-path")
+                {
+                    let value = restore_output_path.to_owned();
+                    result.restore_output_path = Some(value)
                 };
                 Ok(result)
             }

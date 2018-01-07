@@ -78,7 +78,6 @@ impl ActivitiesDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DescribeScalingActivities.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ActivitiesType {
     /// <p>The scaling activities. Activities are sorted by start time. Activities still in progress are described first.</p>
@@ -253,7 +252,6 @@ impl ActivityIdsSerializer {
     }
 }
 
-/// <p>Contains the output of TerminateInstancesInAutoScalingGroup.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ActivityType {
     /// <p>A scaling activity.</p>
@@ -516,10 +514,9 @@ impl AssociatePublicIpAddressDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for AttachInstances.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AttachInstancesQuery {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>One or more instance IDs.</p>
     pub instance_ids: Option<Vec<String>>,
@@ -567,7 +564,6 @@ impl AttachLoadBalancerTargetGroupsResultTypeDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for AttachLoadBalancerTargetGroups.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AttachLoadBalancerTargetGroupsType {
     /// <p>The name of the Auto Scaling group.</p>
@@ -597,7 +593,6 @@ impl AttachLoadBalancerTargetGroupsTypeSerializer {
     }
 }
 
-/// <p>Contains the output of AttachLoadBalancers.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AttachLoadBalancersResultType;
 
@@ -617,10 +612,9 @@ impl AttachLoadBalancersResultTypeDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for AttachLoadBalancers.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AttachLoadBalancersType {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>One or more load balancer names.</p>
     pub load_balancer_names: Vec<String>,
@@ -650,9 +644,9 @@ impl AttachLoadBalancersTypeSerializer {
 /// <p>Describes an Auto Scaling group.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AutoScalingGroup {
-    /// <p>The Amazon Resource Name (ARN) of the group.</p>
+    /// <p>The Amazon Resource Name (ARN) of the Auto Scaling group.</p>
     pub auto_scaling_group_arn: Option<String>,
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>One or more Availability Zones for the group.</p>
     pub availability_zones: Vec<String>,
@@ -672,6 +666,8 @@ pub struct AutoScalingGroup {
     pub instances: Option<Vec<Instance>>,
     /// <p>The name of the associated launch configuration.</p>
     pub launch_configuration_name: Option<String>,
+    /// <p>The launch template for the group.</p>
+    pub launch_template: Option<LaunchTemplateSpecification>,
     /// <p>One or more load balancers associated with the group.</p>
     pub load_balancer_names: Option<Vec<String>>,
     /// <p>The maximum size of the group.</p>
@@ -778,6 +774,13 @@ impl AutoScalingGroupDeserializer {
                         obj.launch_configuration_name =
                             Some(try!(XmlStringMaxLen255Deserializer::deserialize(
                                 "LaunchConfigurationName",
+                                stack
+                            )));
+                    }
+                    "LaunchTemplate" => {
+                        obj.launch_template =
+                            Some(try!(LaunchTemplateSpecificationDeserializer::deserialize(
+                                "LaunchTemplate",
                                 stack
                             )));
                     }
@@ -916,10 +919,9 @@ impl AutoScalingGroupNamesSerializer {
     }
 }
 
-/// <p>Contains the parameters for DescribeAutoScalingGroups.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AutoScalingGroupNamesType {
-    /// <p>The group names. If you omit this parameter, all Auto Scaling groups are described.</p>
+    /// <p>The names of the Auto Scaling groups. If you omit this parameter, all Auto Scaling groups are described.</p>
     pub auto_scaling_group_names: Option<Vec<String>>,
     /// <p>The maximum number of items to return with this call. The default value is 50 and the maximum value is 100.</p>
     pub max_records: Option<i64>,
@@ -1001,7 +1003,6 @@ impl AutoScalingGroupsDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output for DescribeAutoScalingGroups.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AutoScalingGroupsType {
     /// <p>The groups.</p>
@@ -1058,7 +1059,7 @@ impl AutoScalingGroupsTypeDeserializer {
 /// <p>Describes an EC2 instance associated with an Auto Scaling group.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AutoScalingInstanceDetails {
-    /// <p>The name of the Auto Scaling group associated with the instance.</p>
+    /// <p>The name of the Auto Scaling group for the instance.</p>
     pub auto_scaling_group_name: String,
     /// <p>The Availability Zone for the instance.</p>
     pub availability_zone: String,
@@ -1067,7 +1068,9 @@ pub struct AutoScalingInstanceDetails {
     /// <p>The ID of the instance.</p>
     pub instance_id: String,
     /// <p>The launch configuration used to launch the instance. This value is not available if you attached the instance to the Auto Scaling group.</p>
-    pub launch_configuration_name: String,
+    pub launch_configuration_name: Option<String>,
+    /// <p>The launch template for the instance.</p>
+    pub launch_template: Option<LaunchTemplateSpecification>,
     /// <p>The lifecycle state for the instance. For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/AutoScalingGroupLifecycle.html">Auto Scaling Lifecycle</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub lifecycle_state: String,
     /// <p>Indicates whether the instance is protected from termination by Auto Scaling when scaling in.</p>
@@ -1123,10 +1126,17 @@ impl AutoScalingInstanceDetailsDeserializer {
                     }
                     "LaunchConfigurationName" => {
                         obj.launch_configuration_name =
-                            try!(XmlStringMaxLen255Deserializer::deserialize(
+                            Some(try!(XmlStringMaxLen255Deserializer::deserialize(
                                 "LaunchConfigurationName",
                                 stack
-                            ));
+                            )));
+                    }
+                    "LaunchTemplate" => {
+                        obj.launch_template =
+                            Some(try!(LaunchTemplateSpecificationDeserializer::deserialize(
+                                "LaunchTemplate",
+                                stack
+                            )));
                     }
                     "LifecycleState" => {
                         obj.lifecycle_state = try!(XmlStringMaxLen32Deserializer::deserialize(
@@ -1198,7 +1208,6 @@ impl AutoScalingInstancesDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DescribeAutoScalingInstances.</p>
 #[derive(Default, Debug, Clone)]
 pub struct AutoScalingInstancesType {
     /// <p>The instances.</p>
@@ -1643,7 +1652,6 @@ impl ClassicLinkVPCSecurityGroupsSerializer {
     }
 }
 
-/// <p>Contains the output of CompleteLifecycleAction.</p>
 #[derive(Default, Debug, Clone)]
 pub struct CompleteLifecycleActionAnswer;
 
@@ -1663,10 +1671,9 @@ impl CompleteLifecycleActionAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for CompleteLifecycleAction.</p>
 #[derive(Default, Debug, Clone)]
 pub struct CompleteLifecycleActionType {
-    /// <p>The name of the group for the lifecycle hook.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>The ID of the instance.</p>
     pub instance_id: Option<String>,
@@ -1728,25 +1735,28 @@ impl CooldownDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for CreateAutoScalingGroup.</p>
 #[derive(Default, Debug, Clone)]
 pub struct CreateAutoScalingGroupType {
-    /// <p>The name of the group. This name must be unique within the scope of your AWS account.</p>
+    /// <p>The name of the Auto Scaling group. This name must be unique within the scope of your AWS account.</p>
     pub auto_scaling_group_name: String,
     /// <p>One or more Availability Zones for the group. This parameter is optional if you specify one or more subnets.</p>
     pub availability_zones: Option<Vec<String>>,
     /// <p>The amount of time, in seconds, after a scaling activity completes before another scaling activity can start. The default is 300.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/Cooldown.html">Auto Scaling Cooldowns</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub default_cooldown: Option<i64>,
-    /// <p>The number of EC2 instances that should be running in the group. This number must be greater than or equal to the minimum size of the group and less than or equal to the maximum size of the group.</p>
+    /// <p>The number of EC2 instances that should be running in the group. This number must be greater than or equal to the minimum size of the group and less than or equal to the maximum size of the group. If you do not specify a desired capacity, the default is the minimum size of the group.</p>
     pub desired_capacity: Option<i64>,
     /// <p>The amount of time, in seconds, that Auto Scaling waits before checking the health status of an EC2 instance that has come into service. During this time, any health check failures for the instance are ignored. The default is 0.</p> <p>This parameter is required if you are adding an <code>ELB</code> health check.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/healthcheck.html">Health Checks</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub health_check_grace_period: Option<i64>,
     /// <p>The service to use for the health checks. The valid values are <code>EC2</code> and <code>ELB</code>.</p> <p>By default, health checks use Amazon EC2 instance status checks to determine the health of an instance. For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/healthcheck.html">Health Checks</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub health_check_type: Option<String>,
-    /// <p>The ID of the instance used to create a launch configuration for the group. Alternatively, specify a launch configuration instead of an EC2 instance.</p> <p>When you specify an ID of an instance, Auto Scaling creates a new launch configuration and associates it with the group. This launch configuration derives its attributes from the specified instance, with the exception of the block device mapping.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/create-asg-from-instance.html">Create an Auto Scaling Group Using an EC2 Instance</a> in the <i>Auto Scaling User Guide</i>.</p>
+    /// <p>The ID of the instance used to create a launch configuration for the group. You must specify one of the following: an EC2 instance, a launch configuration, or a launch template.</p> <p>When you specify an ID of an instance, Auto Scaling creates a new launch configuration and associates it with the group. This launch configuration derives its attributes from the specified instance, with the exception of the block device mapping.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/create-asg-from-instance.html">Create an Auto Scaling Group Using an EC2 Instance</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub instance_id: Option<String>,
-    /// <p>The name of the launch configuration. Alternatively, specify an EC2 instance instead of a launch configuration.</p>
+    /// <p>The name of the launch configuration. You must specify one of the following: a launch configuration, a launch template, or an EC2 instance.</p>
     pub launch_configuration_name: Option<String>,
+    /// <p>The launch template to use to launch instances. You must specify one of the following: a launch template, a launch configuration, or an EC2 instance.</p>
+    pub launch_template: Option<LaunchTemplateSpecification>,
+    /// <p>One or more lifecycle hooks.</p>
+    pub lifecycle_hook_specification_list: Option<Vec<LifecycleHookSpecification>>,
     /// <p>One or more Classic Load Balancers. To specify an Application Load Balancer, use <code>TargetGroupARNs</code> instead.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/create-asg-from-instance.html">Using a Load Balancer With an Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub load_balancer_names: Option<Vec<String>>,
     /// <p>The maximum size of the group.</p>
@@ -1823,6 +1833,20 @@ impl CreateAutoScalingGroupTypeSerializer {
                 &field_value.replace("+", "%2B"),
             );
         }
+        if let Some(ref field_value) = obj.launch_template {
+            LaunchTemplateSpecificationSerializer::serialize(
+                params,
+                &format!("{}{}", prefix, "LaunchTemplate"),
+                field_value,
+            );
+        }
+        if let Some(ref field_value) = obj.lifecycle_hook_specification_list {
+            LifecycleHookSpecificationsSerializer::serialize(
+                params,
+                &format!("{}{}", prefix, "LifecycleHookSpecificationList"),
+                field_value,
+            );
+        }
         if let Some(ref field_value) = obj.load_balancer_names {
             LoadBalancerNamesSerializer::serialize(
                 params,
@@ -1876,7 +1900,6 @@ impl CreateAutoScalingGroupTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for CreateLaunchConfiguration.</p>
 #[derive(Default, Debug, Clone)]
 pub struct CreateLaunchConfigurationType {
     /// <p>Used for groups that launch instances into a virtual private cloud (VPC). Specifies whether to assign a public IP address to each instance. For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/asg-in-vpc.html">Launching Auto Scaling Instances in a VPC</a> in the <i>Auto Scaling User Guide</i>.</p> <p>If you specify this parameter, be sure to specify at least one subnet when you create your group.</p> <p>Default: If the instance is launched into a default subnet, the default is <code>true</code>. If the instance is launched into a nondefault subnet, the default is <code>false</code>. For more information, see <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html">Supported Platforms</a> in the <i>Amazon Elastic Compute Cloud User Guide</i>.</p>
@@ -1891,13 +1914,13 @@ pub struct CreateLaunchConfigurationType {
     pub ebs_optimized: Option<bool>,
     /// <p>The name or the Amazon Resource Name (ARN) of the instance profile associated with the IAM role for the instance.</p> <p>EC2 instances launched with an IAM role will automatically have AWS security credentials available. You can use IAM roles with Auto Scaling to automatically enable applications running on your EC2 instances to securely access other AWS resources. For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/us-iam-role.html">Launch Auto Scaling Instances with an IAM Role</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub iam_instance_profile: Option<String>,
-    /// <p>The ID of the Amazon Machine Image (AMI) to use to launch your EC2 instances. For more information, see <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html">Finding an AMI</a> in the <i>Amazon Elastic Compute Cloud User Guide</i>.</p>
+    /// <p>The ID of the Amazon Machine Image (AMI) to use to launch your EC2 instances.</p> <p>If you do not specify <code>InstanceId</code>, you must specify <code>ImageId</code>.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html">Finding an AMI</a> in the <i>Amazon Elastic Compute Cloud User Guide</i>.</p>
     pub image_id: Option<String>,
-    /// <p>The ID of the instance to use to create the launch configuration.</p> <p>The new launch configuration derives attributes from the instance, with the exception of the block device mapping.</p> <p>To create a launch configuration with a block device mapping or override any other instance attributes, specify them as part of the same request.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/create-lc-with-instanceID.html">Create a Launch Configuration Using an EC2 Instance</a> in the <i>Auto Scaling User Guide</i>.</p>
+    /// <p>The ID of the instance to use to create the launch configuration. The new launch configuration derives attributes from the instance, with the exception of the block device mapping.</p> <p>If you do not specify <code>InstanceId</code>, you must specify both <code>ImageId</code> and <code>InstanceType</code>.</p> <p>To create a launch configuration with a block device mapping or override any other instance attributes, specify them as part of the same request.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/create-lc-with-instanceID.html">Create a Launch Configuration Using an EC2 Instance</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub instance_id: Option<String>,
-    /// <p>Enables detailed monitoring (<code>true</code>) or basic monitoring (<code>false</code>) for the Auto Scaling instances.</p>
+    /// <p>Enables detailed monitoring (<code>true</code>) or basic monitoring (<code>false</code>) for the Auto Scaling instances. The default is <code>true</code>.</p>
     pub instance_monitoring: Option<InstanceMonitoring>,
-    /// <p>The instance type of the EC2 instance. For information about available instance types, see <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#AvailableInstanceTypes"> Available Instance Types</a> in the <i>Amazon Elastic Compute Cloud User Guide.</i> </p>
+    /// <p>The instance type of the EC2 instance.</p> <p>If you do not specify <code>InstanceId</code>, you must specify <code>InstanceType</code>.</p> <p>For information about available instance types, see <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#AvailableInstanceTypes">Available Instance Types</a> in the <i>Amazon Elastic Compute Cloud User Guide.</i> </p>
     pub instance_type: Option<String>,
     /// <p>The ID of the kernel associated with the AMI.</p>
     pub kernel_id: Option<String>,
@@ -2039,7 +2062,6 @@ impl CreateLaunchConfigurationTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for CreateOrUpdateTags.</p>
 #[derive(Default, Debug, Clone)]
 pub struct CreateOrUpdateTagsType {
     /// <p>One or more tags.</p>
@@ -2169,10 +2191,9 @@ impl CustomizedMetricSpecificationSerializer {
     }
 }
 
-/// <p>Contains the parameters for DeleteAutoScalingGroup.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DeleteAutoScalingGroupType {
-    /// <p>The name of the group to delete.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>Specifies that the group will be deleted along with all instances associated with the group, without waiting for all instances to be terminated. This parameter also deletes any lifecycle actions associated with the group.</p>
     pub force_delete: Option<bool>,
@@ -2200,7 +2221,6 @@ impl DeleteAutoScalingGroupTypeSerializer {
     }
 }
 
-/// <p>Contains the output of DeleteLifecycleHook.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DeleteLifecycleHookAnswer;
 
@@ -2220,10 +2240,9 @@ impl DeleteLifecycleHookAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DeleteLifecycleHook.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DeleteLifecycleHookType {
-    /// <p>The name of the Auto Scaling group for the lifecycle hook.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>The name of the lifecycle hook.</p>
     pub lifecycle_hook_name: String,
@@ -2249,7 +2268,6 @@ impl DeleteLifecycleHookTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DeleteNotificationConfiguration.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DeleteNotificationConfigurationType {
     /// <p>The name of the Auto Scaling group.</p>
@@ -2278,7 +2296,6 @@ impl DeleteNotificationConfigurationTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DeletePolicy.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DeletePolicyType {
     /// <p>The name of the Auto Scaling group.</p>
@@ -2309,7 +2326,6 @@ impl DeletePolicyTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DeleteScheduledAction.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DeleteScheduledActionType {
     /// <p>The name of the Auto Scaling group.</p>
@@ -2338,7 +2354,6 @@ impl DeleteScheduledActionTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DeleteTags.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DeleteTagsType {
     /// <p>One or more tags.</p>
@@ -2358,7 +2373,6 @@ impl DeleteTagsTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DescribeAccountLimits.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeAccountLimitsAnswer {
     /// <p>The maximum number of groups allowed for your AWS account. The default limit is 20 per region.</p>
@@ -2438,7 +2452,6 @@ impl DescribeAccountLimitsAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DescribeAdjustmentTypes.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeAdjustmentTypesAnswer {
     /// <p>The policy adjustment types.</p>
@@ -2486,7 +2499,6 @@ impl DescribeAdjustmentTypesAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DescribeAutoScalingInstances.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeAutoScalingInstancesType {
     /// <p>The instances to describe; up to 50 instance IDs. If you omit this parameter, all Auto Scaling instances are described. If you specify an ID that does not exist, it is ignored with no error.</p>
@@ -2528,7 +2540,6 @@ impl DescribeAutoScalingInstancesTypeSerializer {
     }
 }
 
-/// <p>Contains the output of DescribeAutoScalingNotificationTypes.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeAutoScalingNotificationTypesAnswer {
     /// <p>The notification types.</p>
@@ -2579,7 +2590,6 @@ impl DescribeAutoScalingNotificationTypesAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DescribeLifecycleHookTypes.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeLifecycleHookTypesAnswer {
     /// <p>The lifecycle hook types.</p>
@@ -2630,7 +2640,6 @@ impl DescribeLifecycleHookTypesAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DescribeLifecycleHooks.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeLifecycleHooksAnswer {
     /// <p>The lifecycle hooks for the specified group.</p>
@@ -2679,10 +2688,9 @@ impl DescribeLifecycleHooksAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DescribeLifecycleHooks.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeLifecycleHooksType {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>The names of one or more lifecycle hooks. If you omit this parameter, all lifecycle hooks are described.</p>
     pub lifecycle_hook_names: Option<Vec<String>>,
@@ -2711,7 +2719,6 @@ impl DescribeLifecycleHooksTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DescribeLoadBalancerTargetGroups.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeLoadBalancerTargetGroupsRequest {
     /// <p>The name of the Auto Scaling group.</p>
@@ -2750,7 +2757,6 @@ impl DescribeLoadBalancerTargetGroupsRequestSerializer {
     }
 }
 
-/// <p>Contains the output of DescribeLoadBalancerTargetGroups.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeLoadBalancerTargetGroupsResponse {
     /// <p>Information about the target groups.</p>
@@ -2807,10 +2813,9 @@ impl DescribeLoadBalancerTargetGroupsResponseDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DescribeLoadBalancers.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeLoadBalancersRequest {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>The maximum number of items to return with this call. The default value is 50 and the maximum value is 100.</p>
     pub max_records: Option<i64>,
@@ -2846,7 +2851,6 @@ impl DescribeLoadBalancersRequestSerializer {
     }
 }
 
-/// <p>Contains the output of DescribeLoadBalancers.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeLoadBalancersResponse {
     /// <p>The load balancers.</p>
@@ -2900,7 +2904,6 @@ impl DescribeLoadBalancersResponseDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DescribeMetricsCollectionTypes.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeMetricCollectionTypesAnswer {
     /// <p>The granularities for the metrics.</p>
@@ -2956,7 +2959,6 @@ impl DescribeMetricCollectionTypesAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output from DescribeNotificationConfigurations.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeNotificationConfigurationsAnswer {
     /// <p>The token to use when requesting the next set of items. If there are no additional items to return, the string is empty.</p>
@@ -3012,10 +3014,9 @@ impl DescribeNotificationConfigurationsAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DescribeNotificationConfigurations.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeNotificationConfigurationsType {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_names: Option<Vec<String>>,
     /// <p>The maximum number of items to return with this call. The default value is 50 and the maximum value is 100.</p>
     pub max_records: Option<i64>,
@@ -3054,16 +3055,15 @@ impl DescribeNotificationConfigurationsTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DescribePolicies.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribePoliciesType {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: Option<String>,
     /// <p>The maximum number of items to be returned with each call. The default value is 50 and the maximum value is 100.</p>
     pub max_records: Option<i64>,
     /// <p>The token for the next set of items to return. (You received this token from a previous call.)</p>
     pub next_token: Option<String>,
-    /// <p>One or more policy names or policy ARNs to be described. If you omit this parameter, all policy names are described. If an group name is provided, the results are limited to that group. This list is limited to 50 items. If you specify an unknown policy name, it is ignored with no error.</p>
+    /// <p>The names of one or more policies. If you omit this parameter, all policies are described. If an group name is provided, the results are limited to that group. This list is limited to 50 items. If you specify an unknown policy name, it is ignored with no error.</p>
     pub policy_names: Option<Vec<String>>,
     /// <p>One or more policy types. Valid values are <code>SimpleScaling</code> and <code>StepScaling</code>.</p>
     pub policy_types: Option<Vec<String>>,
@@ -3113,12 +3113,11 @@ impl DescribePoliciesTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DescribeScalingActivities.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeScalingActivitiesType {
     /// <p>The activity IDs of the desired scaling activities. If you omit this parameter, all activities for the past six weeks are described. If you specify an Auto Scaling group, the results are limited to that group. The list of requested activities cannot contain more than 50 items. If unknown activities are requested, they are ignored with no error.</p>
     pub activity_ids: Option<Vec<String>>,
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: Option<String>,
     /// <p>The maximum number of items to return with this call. The default value is 100.</p>
     pub max_records: Option<i64>,
@@ -3163,10 +3162,9 @@ impl DescribeScalingActivitiesTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DescribeScheduledActions.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeScheduledActionsType {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: Option<String>,
     /// <p>The latest scheduled start time to return. If scheduled action names are provided, this parameter is ignored.</p>
     pub end_time: Option<String>,
@@ -3229,7 +3227,6 @@ impl DescribeScheduledActionsTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DescribeTags.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeTagsType {
     /// <p>A filter used to scope the tags to return.</p>
@@ -3267,7 +3264,6 @@ impl DescribeTagsTypeSerializer {
     }
 }
 
-/// <p>Contains the output of DescribeTerminationPolicyTypes.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DescribeTerminationPolicyTypesAnswer {
     /// <p>The termination policies supported by Auto Scaling (<code>OldestInstance</code>, <code>OldestLaunchConfiguration</code>, <code>NewestInstance</code>, <code>ClosestToNextInstanceHour</code>, and <code>Default</code>).</p>
@@ -3317,7 +3313,6 @@ impl DescribeTerminationPolicyTypesAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DetachInstances.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DetachInstancesAnswer {
     /// <p>The activities related to detaching the instances from the Auto Scaling group.</p>
@@ -3366,10 +3361,9 @@ impl DetachInstancesAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DetachInstances.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DetachInstancesQuery {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>One or more instance IDs.</p>
     pub instance_ids: Option<Vec<String>>,
@@ -3454,7 +3448,6 @@ impl DetachLoadBalancerTargetGroupsTypeSerializer {
     }
 }
 
-/// <p>Contains the output for DetachLoadBalancers.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DetachLoadBalancersResultType;
 
@@ -3474,7 +3467,6 @@ impl DetachLoadBalancersResultTypeDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DetachLoadBalancers.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DetachLoadBalancersType {
     /// <p>The name of the Auto Scaling group.</p>
@@ -3504,10 +3496,9 @@ impl DetachLoadBalancersTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for DisableMetricsCollection.</p>
 #[derive(Default, Debug, Clone)]
 pub struct DisableMetricsCollectionQuery {
-    /// <p>The name or Amazon Resource Name (ARN) of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>One or more of the following metrics. If you omit this parameter, all metrics are disabled.</p> <ul> <li> <p> <code>GroupMinSize</code> </p> </li> <li> <p> <code>GroupMaxSize</code> </p> </li> <li> <p> <code>GroupDesiredCapacity</code> </p> </li> <li> <p> <code>GroupInServiceInstances</code> </p> </li> <li> <p> <code>GroupPendingInstances</code> </p> </li> <li> <p> <code>GroupStandbyInstances</code> </p> </li> <li> <p> <code>GroupTerminatingInstances</code> </p> </li> <li> <p> <code>GroupTotalInstances</code> </p> </li> </ul>
     pub metrics: Option<Vec<String>>,
@@ -3697,10 +3688,9 @@ impl EbsOptimizedDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for EnableMetricsCollection.</p>
 #[derive(Default, Debug, Clone)]
 pub struct EnableMetricsCollectionQuery {
-    /// <p>The name or ARN of the Auto Scaling group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>The granularity to associate with the metrics to collect. The only valid value is <code>1Minute</code>.</p>
     pub granularity: String,
@@ -3831,7 +3821,6 @@ impl EnabledMetricsDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of EnterStandby.</p>
 #[derive(Default, Debug, Clone)]
 pub struct EnterStandbyAnswer {
     /// <p>The activities related to moving instances into <code>Standby</code> mode.</p>
@@ -3880,7 +3869,6 @@ impl EnterStandbyAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for EnteStandby.</p>
 #[derive(Default, Debug, Clone)]
 pub struct EnterStandbyQuery {
     /// <p>The name of the Auto Scaling group.</p>
@@ -3934,10 +3922,9 @@ impl EstimatedInstanceWarmupDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for ExecutePolicy.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ExecutePolicyType {
-    /// <p>The name or Amazon Resource Name (ARN) of the Auto Scaling group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: Option<String>,
     /// <p>The breach threshold for the alarm.</p> <p>This parameter is required if the policy type is <code>StepScaling</code> and not supported otherwise.</p>
     pub breach_threshold: Option<f64>,
@@ -3989,7 +3976,6 @@ impl ExecutePolicyTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for ExitStandby.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ExitStandbyAnswer {
     /// <p>The activities related to moving instances out of <code>Standby</code> mode.</p>
@@ -4038,7 +4024,6 @@ impl ExitStandbyAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for ExitStandby.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ExitStandbyQuery {
     /// <p>The name of the Auto Scaling group.</p>
@@ -4163,7 +4148,9 @@ pub struct Instance {
     /// <p>The ID of the instance.</p>
     pub instance_id: String,
     /// <p>The launch configuration associated with the instance.</p>
-    pub launch_configuration_name: String,
+    pub launch_configuration_name: Option<String>,
+    /// <p>The launch template for the instance.</p>
+    pub launch_template: Option<LaunchTemplateSpecification>,
     /// <p>A description of the current lifecycle state. Note that the <code>Quarantined</code> state is not used.</p>
     pub lifecycle_state: String,
     /// <p>Indicates whether the instance is protected from termination by Auto Scaling when scaling in.</p>
@@ -4212,10 +4199,17 @@ impl InstanceDeserializer {
                     }
                     "LaunchConfigurationName" => {
                         obj.launch_configuration_name =
-                            try!(XmlStringMaxLen255Deserializer::deserialize(
+                            Some(try!(XmlStringMaxLen255Deserializer::deserialize(
                                 "LaunchConfigurationName",
                                 stack
-                            ));
+                            )));
+                    }
+                    "LaunchTemplate" => {
+                        obj.launch_template =
+                            Some(try!(LaunchTemplateSpecificationDeserializer::deserialize(
+                                "LaunchTemplate",
+                                stack
+                            )));
                     }
                     "LifecycleState" => {
                         obj.lifecycle_state = try!(LifecycleStateDeserializer::deserialize(
@@ -4256,10 +4250,10 @@ impl InstanceIdsSerializer {
     }
 }
 
-/// <p>Describes whether instance monitoring is enabled.</p>
+/// <p>Describes whether detailed monitoring is enabled for the Auto Scaling instances.</p>
 #[derive(Default, Debug, Clone)]
 pub struct InstanceMonitoring {
-    /// <p>If <code>True</code>, instance monitoring is enabled.</p>
+    /// <p>If <code>true</code>, detailed monitoring is enabled. Otherwise, basic monitoring is enabled.</p>
     pub enabled: Option<bool>,
 }
 
@@ -4571,7 +4565,6 @@ impl LaunchConfigurationDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for DeleteLaunchConfiguration.</p>
 #[derive(Default, Debug, Clone)]
 pub struct LaunchConfigurationNameType {
     /// <p>The name of the launch configuration.</p>
@@ -4605,7 +4598,6 @@ impl LaunchConfigurationNamesSerializer {
     }
 }
 
-/// <p>Contains the parameters for DescribeLaunchConfigurations.</p>
 #[derive(Default, Debug, Clone)]
 pub struct LaunchConfigurationNamesType {
     /// <p>The launch configuration names. If you omit this parameter, all launch configurations are described.</p>
@@ -4690,7 +4682,6 @@ impl LaunchConfigurationsDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DescribeLaunchConfigurations.</p>
 #[derive(Default, Debug, Clone)]
 pub struct LaunchConfigurationsType {
     /// <p>The launch configurations.</p>
@@ -4746,6 +4737,116 @@ impl LaunchConfigurationsTypeDeserializer {
         Ok(obj)
     }
 }
+struct LaunchTemplateNameDeserializer;
+impl LaunchTemplateNameDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<String, XmlParseError> {
+        try!(start_element(tag_name, stack));
+        let obj = try!(characters(stack));
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+/// <p>Describes a launch template.</p>
+#[derive(Default, Debug, Clone)]
+pub struct LaunchTemplateSpecification {
+    /// <p>The ID of the launch template. You must specify either a template ID or a template name.</p>
+    pub launch_template_id: Option<String>,
+    /// <p>The name of the launch template. You must specify either a template name or a template ID.</p>
+    pub launch_template_name: Option<String>,
+    /// <p>The version number. By default, the default version of the launch template is used.</p>
+    pub version: Option<String>,
+}
+
+struct LaunchTemplateSpecificationDeserializer;
+impl LaunchTemplateSpecificationDeserializer {
+    #[allow(unused_variables)]
+    fn deserialize<'a, T: Peek + Next>(
+        tag_name: &str,
+        stack: &mut T,
+    ) -> Result<LaunchTemplateSpecification, XmlParseError> {
+        try!(start_element(tag_name, stack));
+
+        let mut obj = LaunchTemplateSpecification::default();
+
+        loop {
+            let next_event = match stack.peek() {
+                Some(&Ok(XmlEvent::EndElement { ref name, .. })) => DeserializerNext::Close,
+                Some(&Ok(XmlEvent::StartElement { ref name, .. })) => {
+                    DeserializerNext::Element(name.local_name.to_owned())
+                }
+                _ => DeserializerNext::Skip,
+            };
+
+            match next_event {
+                DeserializerNext::Element(name) => match &name[..] {
+                    "LaunchTemplateId" => {
+                        obj.launch_template_id = Some(try!(
+                            XmlStringMaxLen255Deserializer::deserialize("LaunchTemplateId", stack)
+                        ));
+                    }
+                    "LaunchTemplateName" => {
+                        obj.launch_template_name =
+                            Some(try!(LaunchTemplateNameDeserializer::deserialize(
+                                "LaunchTemplateName",
+                                stack
+                            )));
+                    }
+                    "Version" => {
+                        obj.version = Some(try!(XmlStringMaxLen255Deserializer::deserialize(
+                            "Version",
+                            stack
+                        )));
+                    }
+                    _ => skip_tree(stack),
+                },
+                DeserializerNext::Close => break,
+                DeserializerNext::Skip => {
+                    stack.next();
+                }
+            }
+        }
+
+        try!(end_element(tag_name, stack));
+
+        Ok(obj)
+    }
+}
+
+/// Serialize `LaunchTemplateSpecification` contents to a `SignedRequest`.
+struct LaunchTemplateSpecificationSerializer;
+impl LaunchTemplateSpecificationSerializer {
+    fn serialize(params: &mut Params, name: &str, obj: &LaunchTemplateSpecification) {
+        let mut prefix = name.to_string();
+        if prefix != "" {
+            prefix.push_str(".");
+        }
+
+        if let Some(ref field_value) = obj.launch_template_id {
+            params.put(
+                &format!("{}{}", prefix, "LaunchTemplateId"),
+                &field_value.replace("+", "%2B"),
+            );
+        }
+        if let Some(ref field_value) = obj.launch_template_name {
+            params.put(
+                &format!("{}{}", prefix, "LaunchTemplateName"),
+                &field_value.replace("+", "%2B"),
+            );
+        }
+        if let Some(ref field_value) = obj.version {
+            params.put(
+                &format!("{}{}", prefix, "Version"),
+                &field_value.replace("+", "%2B"),
+            );
+        }
+    }
+}
+
 struct LifecycleActionResultDeserializer;
 impl LifecycleActionResultDeserializer {
     #[allow(unused_variables)]
@@ -4760,7 +4861,7 @@ impl LifecycleActionResultDeserializer {
         Ok(obj)
     }
 }
-/// <p>Describes a lifecycle hook, which tells Auto Scaling that you want to perform an action when an instance launches or terminates. When you have a lifecycle hook in place, the Auto Scaling group will either:</p> <ul> <li> <p>Pause the instance after it launches, but before it is put into service</p> </li> <li> <p>Pause the instance as it terminates, but before it is fully terminated</p> </li> </ul> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/AutoScalingGroupLifecycle.html">Auto Scaling Lifecycle</a> in the <i>Auto Scaling User Guide</i>.</p>
+/// <p>Describes a lifecycle hook, which tells Auto Scaling that you want to perform an action whenever it launches instances or whenever it terminates instances.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/lifecycle-hooks.html">Auto Scaling Lifecycle Hooks</a> in the <i>Auto Scaling User Guide</i>.</p>
 #[derive(Default, Debug, Clone)]
 pub struct LifecycleHook {
     /// <p>The name of the Auto Scaling group for the lifecycle hook.</p>
@@ -4769,7 +4870,7 @@ pub struct LifecycleHook {
     pub default_result: Option<String>,
     /// <p>The maximum time, in seconds, that an instance can remain in a <code>Pending:Wait</code> or <code>Terminating:Wait</code> state. The maximum is 172800 seconds (48 hours) or 100 times <code>HeartbeatTimeout</code>, whichever is smaller.</p>
     pub global_timeout: Option<i64>,
-    /// <p>The maximum time, in seconds, that can elapse before the lifecycle hook times out. The default is 3600 seconds (1 hour). When the lifecycle hook times out, Auto Scaling performs the default action. You can prevent the lifecycle hook from timing out by calling <a>RecordLifecycleActionHeartbeat</a>.</p>
+    /// <p>The maximum time, in seconds, that can elapse before the lifecycle hook times out. If the lifecycle hook times out, Auto Scaling performs the default action. You can prevent the lifecycle hook from timing out by calling <a>RecordLifecycleActionHeartbeat</a>.</p>
     pub heartbeat_timeout: Option<i64>,
     /// <p>The name of the lifecycle hook.</p>
     pub lifecycle_hook_name: Option<String>,
@@ -4777,7 +4878,7 @@ pub struct LifecycleHook {
     pub lifecycle_transition: Option<String>,
     /// <p>Additional information that you want to include any time Auto Scaling sends a message to the notification target.</p>
     pub notification_metadata: Option<String>,
-    /// <p>The ARN of the notification target that Auto Scaling uses to notify you when an instance is in the transition state for the lifecycle hook. This ARN target can be either an SQS queue or an SNS topic. The notification message sent to the target includes the following:</p> <ul> <li> <p>Lifecycle action token</p> </li> <li> <p>User account ID</p> </li> <li> <p>Name of the Auto Scaling group</p> </li> <li> <p>Lifecycle hook name</p> </li> <li> <p>EC2 instance ID</p> </li> <li> <p>Lifecycle transition</p> </li> <li> <p>Notification metadata</p> </li> </ul>
+    /// <p>The ARN of the target that Auto Scaling sends notifications to when an instance is in the transition state for the lifecycle hook. The notification target can be either an SQS queue or an SNS topic.</p>
     pub notification_target_arn: Option<String>,
     /// <p>The ARN of the IAM role that allows the Auto Scaling group to publish to the specified notification target.</p>
     pub role_arn: Option<String>,
@@ -4880,6 +4981,86 @@ impl LifecycleHookNamesSerializer {
         for (index, obj) in obj.iter().enumerate() {
             let key = format!("{}.member.{}", name, index + 1);
             params.put(&key, &obj);
+        }
+    }
+}
+
+/// <p>Describes a lifecycle hook, which tells Auto Scaling that you want to perform an action whenever it launches instances or whenever it terminates instances.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/lifecycle-hooks.html">Auto Scaling Lifecycle Hooks</a> in the <i>Auto Scaling User Guide</i>.</p>
+#[derive(Default, Debug, Clone)]
+pub struct LifecycleHookSpecification {
+    /// <p>Defines the action the Auto Scaling group should take when the lifecycle hook timeout elapses or if an unexpected failure occurs. The valid values are <code>CONTINUE</code> and <code>ABANDON</code>.</p>
+    pub default_result: Option<String>,
+    /// <p>The maximum time, in seconds, that can elapse before the lifecycle hook times out. If the lifecycle hook times out, Auto Scaling performs the default action. You can prevent the lifecycle hook from timing out by calling <a>RecordLifecycleActionHeartbeat</a>.</p>
+    pub heartbeat_timeout: Option<i64>,
+    /// <p>The name of the lifecycle hook.</p>
+    pub lifecycle_hook_name: String,
+    /// <p>The state of the EC2 instance to which you want to attach the lifecycle hook. For a list of lifecycle hook types, see <a>DescribeLifecycleHookTypes</a>.</p>
+    pub lifecycle_transition: String,
+    /// <p>Additional information that you want to include any time Auto Scaling sends a message to the notification target.</p>
+    pub notification_metadata: Option<String>,
+    /// <p>The ARN of the target that Auto Scaling sends notifications to when an instance is in the transition state for the lifecycle hook. The notification target can be either an SQS queue or an SNS topic.</p>
+    pub notification_target_arn: Option<String>,
+    /// <p>The ARN of the IAM role that allows the Auto Scaling group to publish to the specified notification target.</p>
+    pub role_arn: Option<String>,
+}
+
+/// Serialize `LifecycleHookSpecification` contents to a `SignedRequest`.
+struct LifecycleHookSpecificationSerializer;
+impl LifecycleHookSpecificationSerializer {
+    fn serialize(params: &mut Params, name: &str, obj: &LifecycleHookSpecification) {
+        let mut prefix = name.to_string();
+        if prefix != "" {
+            prefix.push_str(".");
+        }
+
+        if let Some(ref field_value) = obj.default_result {
+            params.put(
+                &format!("{}{}", prefix, "DefaultResult"),
+                &field_value.replace("+", "%2B"),
+            );
+        }
+        if let Some(ref field_value) = obj.heartbeat_timeout {
+            params.put(
+                &format!("{}{}", prefix, "HeartbeatTimeout"),
+                &field_value.to_string().replace("+", "%2B"),
+            );
+        }
+        params.put(
+            &format!("{}{}", prefix, "LifecycleHookName"),
+            &obj.lifecycle_hook_name.replace("+", "%2B"),
+        );
+        params.put(
+            &format!("{}{}", prefix, "LifecycleTransition"),
+            &obj.lifecycle_transition.replace("+", "%2B"),
+        );
+        if let Some(ref field_value) = obj.notification_metadata {
+            params.put(
+                &format!("{}{}", prefix, "NotificationMetadata"),
+                &field_value.replace("+", "%2B"),
+            );
+        }
+        if let Some(ref field_value) = obj.notification_target_arn {
+            params.put(
+                &format!("{}{}", prefix, "NotificationTargetARN"),
+                &field_value.replace("+", "%2B"),
+            );
+        }
+        if let Some(ref field_value) = obj.role_arn {
+            params.put(
+                &format!("{}{}", prefix, "RoleARN"),
+                &field_value.replace("+", "%2B"),
+            );
+        }
+    }
+}
+
+/// Serialize `LifecycleHookSpecifications` contents to a `SignedRequest`.
+struct LifecycleHookSpecificationsSerializer;
+impl LifecycleHookSpecificationsSerializer {
+    fn serialize(params: &mut Params, name: &str, obj: &Vec<LifecycleHookSpecification>) {
+        for (index, obj) in obj.iter().enumerate() {
+            let key = format!("{}.member.{}", name, index + 1);
+            LifecycleHookSpecificationSerializer::serialize(params, &key, obj);
         }
     }
 }
@@ -5735,7 +5916,7 @@ impl NoDeviceDeserializer {
 /// <p>Describes a notification.</p>
 #[derive(Default, Debug, Clone)]
 pub struct NotificationConfiguration {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: Option<String>,
     /// <p>One of the following event notification types:</p> <ul> <li> <p> <code>autoscaling:EC2_INSTANCE_LAUNCH</code> </p> </li> <li> <p> <code>autoscaling:EC2_INSTANCE_LAUNCH_ERROR</code> </p> </li> <li> <p> <code>autoscaling:EC2_INSTANCE_TERMINATE</code> </p> </li> <li> <p> <code>autoscaling:EC2_INSTANCE_TERMINATE_ERROR</code> </p> </li> <li> <p> <code>autoscaling:TEST_NOTIFICATION</code> </p> </li> </ul>
     pub notification_type: Option<String>,
@@ -5866,7 +6047,6 @@ impl NumberOfLaunchConfigurationsDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DescribePolicies.</p>
 #[derive(Default, Debug, Clone)]
 pub struct PoliciesType {
     /// <p>The token to use when requesting the next set of items. If there are no additional items to return, the string is empty.</p>
@@ -5923,7 +6103,7 @@ impl PoliciesTypeDeserializer {
 /// <p>Contains the output of PutScalingPolicy.</p>
 #[derive(Default, Debug, Clone)]
 pub struct PolicyARNType {
-    /// <p>The CloudWatch alarms created for the target tracking policy. This parameter will be empty if the policy type is anything other than <code>TargetTrackingScaling</code>.</p>
+    /// <p>The CloudWatch alarms created for the target tracking policy.</p>
     pub alarms: Option<Vec<Alarm>>,
     /// <p>The Amazon Resource Name (ARN) of the policy.</p>
     pub policy_arn: Option<String>,
@@ -6011,12 +6191,12 @@ impl PolicyTypesSerializer {
     }
 }
 
-/// <p>Configures a predefined metric for a target tracking policy. The following predefined metrics are available:</p> <ul> <li> <p> <code>ASGAverageCPUUtilization</code> - average CPU utilization of the Auto Scaling group</p> </li> <li> <p> <code>ASGAverageNetworkIn</code> - average number of bytes received on all network interfaces by the Auto Scaling group</p> </li> <li> <p> <code>ASGAverageNetworkOut</code> - average number of bytes sent out on all network interfaces by the Auto Scaling group</p> </li> <li> <p> <code>ALBRequestCountPerTarget</code> - number of requests completed per target in an Application Load Balancer target group</p> </li> </ul>
+/// <p>Configures a predefined metric for a target tracking policy.</p>
 #[derive(Default, Debug, Clone)]
 pub struct PredefinedMetricSpecification {
     /// <p>The metric type.</p>
     pub predefined_metric_type: String,
-    /// <p>Identifies the resource associated with the metric type. For predefined metric types <code>ASGAverageCPUUtilization</code>, <code>ASGAverageNetworkIn</code> and <code>ASGAverageNetworkOut</code>, the parameter must not be specified as the resource associated with the metric type is the Auto Scaling group. For predefined metric type <code>ALBRequestCountPerTarget</code>, the parameter must be specified in the format <code>app/<i>load-balancer-name</i>/<i>load-balancer-id</i>/targetgroup/<i>target-group-name</i>/<i>target-group-id</i> </code>, where <code>app/<i>load-balancer-name</i>/<i>load-balancer-id</i> </code> is the final portion of the load balancer ARN, and <code>targetgroup/<i>target-group-name</i>/<i>target-group-id</i> </code> is the final portion of the target group ARN. The target group must be attached to the Auto Scaling group.</p>
+    /// <p>Identifies the resource associated with the metric type. The following predefined metrics are available:</p> <ul> <li> <p> <code>ASGAverageCPUUtilization</code> - average CPU utilization of the Auto Scaling group</p> </li> <li> <p> <code>ASGAverageNetworkIn</code> - average number of bytes received on all network interfaces by the Auto Scaling group</p> </li> <li> <p> <code>ASGAverageNetworkOut</code> - average number of bytes sent out on all network interfaces by the Auto Scaling group</p> </li> <li> <p> <code>ALBRequestCountPerTarget</code> - number of requests completed per target in an Application Load Balancer target group</p> </li> </ul> <p>For predefined metric types <code>ASGAverageCPUUtilization</code>, <code>ASGAverageNetworkIn</code>, and <code>ASGAverageNetworkOut</code>, the parameter must not be specified as the resource associated with the metric type is the Auto Scaling group. For predefined metric type <code>ALBRequestCountPerTarget</code>, the parameter must be specified in the format: <code>app/<i>load-balancer-name</i>/<i>load-balancer-id</i>/targetgroup/<i>target-group-name</i>/<i>target-group-id</i> </code>, where <code>app/<i>load-balancer-name</i>/<i>load-balancer-id</i> </code> is the final portion of the load balancer ARN, and <code>targetgroup/<i>target-group-name</i>/<i>target-group-id</i> </code> is the final portion of the target group ARN. The target group must be attached to the Auto Scaling group.</p>
     pub resource_label: Option<String>,
 }
 
@@ -6190,7 +6370,6 @@ impl ProcessesDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of DescribeScalingProcessTypes.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ProcessesType {
     /// <p>The names of the process types.</p>
@@ -6265,7 +6444,6 @@ impl PropagateAtLaunchDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the output of PutLifecycleHook.</p>
 #[derive(Default, Debug, Clone)]
 pub struct PutLifecycleHookAnswer;
 
@@ -6285,14 +6463,13 @@ impl PutLifecycleHookAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for PutLifecycleHook.</p>
 #[derive(Default, Debug, Clone)]
 pub struct PutLifecycleHookType {
-    /// <p>The name of the Auto Scaling group to which you want to assign the lifecycle hook.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>Defines the action the Auto Scaling group should take when the lifecycle hook timeout elapses or if an unexpected failure occurs. This parameter can be either <code>CONTINUE</code> or <code>ABANDON</code>. The default value is <code>ABANDON</code>.</p>
     pub default_result: Option<String>,
-    /// <p>The amount of time, in seconds, that can elapse before the lifecycle hook times out. When the lifecycle hook times out, Auto Scaling performs the default action. You can prevent the lifecycle hook from timing out by calling <a>RecordLifecycleActionHeartbeat</a>. The default is 3600 seconds (1 hour).</p>
+    /// <p>The maximum time, in seconds, that can elapse before the lifecycle hook times out. The range is from 30 to 7200 seconds. The default is 3600 seconds (1 hour).</p> <p>If the lifecycle hook times out, Auto Scaling performs the default action. You can prevent the lifecycle hook from timing out by calling <a>RecordLifecycleActionHeartbeat</a>.</p>
     pub heartbeat_timeout: Option<i64>,
     /// <p>The name of the lifecycle hook.</p>
     pub lifecycle_hook_name: String,
@@ -6362,7 +6539,6 @@ impl PutLifecycleHookTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for PutNotificationConfiguration.</p>
 #[derive(Default, Debug, Clone)]
 pub struct PutNotificationConfigurationType {
     /// <p>The name of the Auto Scaling group.</p>
@@ -6398,12 +6574,11 @@ impl PutNotificationConfigurationTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for PutScalingPolicy.</p>
 #[derive(Default, Debug, Clone)]
 pub struct PutScalingPolicyType {
     /// <p>The adjustment type. The valid values are <code>ChangeInCapacity</code>, <code>ExactCapacity</code>, and <code>PercentChangeInCapacity</code>.</p> <p>This parameter is supported if the policy type is <code>SimpleScaling</code> or <code>StepScaling</code>.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/as-scale-based-on-demand.html">Dynamic Scaling</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub adjustment_type: Option<String>,
-    /// <p>The name or ARN of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>The amount of time, in seconds, after a scaling activity completes and before the next scaling activity can start. If this parameter is not specified, the default cooldown period for the group applies.</p> <p>This parameter is supported if the policy type is <code>SimpleScaling</code>.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/Cooldown.html">Auto Scaling Cooldowns</a> in the <i>Auto Scaling User Guide</i>.</p>
     pub cooldown: Option<i64>,
@@ -6423,7 +6598,7 @@ pub struct PutScalingPolicyType {
     pub scaling_adjustment: Option<i64>,
     /// <p>A set of adjustments that enable you to scale based on the size of the alarm breach.</p> <p>This parameter is required if the policy type is <code>StepScaling</code> and not supported otherwise.</p>
     pub step_adjustments: Option<Vec<StepAdjustment>>,
-    /// <p>The configuration of a target tracking policy.</p> <p>This parameter is required if the policy type is <code>TargetTrackingScaling</code> and not supported otherwise.</p>
+    /// <p>A target tracking policy.</p> <p>This parameter is required if the policy type is <code>TargetTrackingScaling</code> and not supported otherwise.</p>
     pub target_tracking_configuration: Option<TargetTrackingConfiguration>,
 }
 
@@ -6509,10 +6684,9 @@ impl PutScalingPolicyTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for PutScheduledUpdateGroupAction.</p>
 #[derive(Default, Debug, Clone)]
 pub struct PutScheduledUpdateGroupActionType {
-    /// <p>The name or Amazon Resource Name (ARN) of the Auto Scaling group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>The number of EC2 instances that should be running in the group.</p>
     pub desired_capacity: Option<i64>,
@@ -6594,7 +6768,6 @@ impl PutScheduledUpdateGroupActionTypeSerializer {
     }
 }
 
-/// <p>Contains the output of RecordLifecycleActionHeartBeat.</p>
 #[derive(Default, Debug, Clone)]
 pub struct RecordLifecycleActionHeartbeatAnswer;
 
@@ -6614,10 +6787,9 @@ impl RecordLifecycleActionHeartbeatAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for RecordLifecycleActionHeartbeat.</p>
 #[derive(Default, Debug, Clone)]
 pub struct RecordLifecycleActionHeartbeatType {
-    /// <p>The name of the Auto Scaling group for the hook.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>The ID of the instance.</p>
     pub instance_id: Option<String>,
@@ -6737,9 +6909,9 @@ pub struct ScalingPolicy {
     pub adjustment_type: Option<String>,
     /// <p>The CloudWatch alarms related to the policy.</p>
     pub alarms: Option<Vec<Alarm>>,
-    /// <p>The name of the Auto Scaling group associated with this scaling policy.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: Option<String>,
-    /// <p>The amount of time, in seconds, after a scaling activity completes before any further trigger-related scaling activities can start.</p>
+    /// <p>The amount of time, in seconds, after a scaling activity completes before any further dynamic scaling activities can start.</p>
     pub cooldown: Option<i64>,
     /// <p>The estimated time, in seconds, until a newly launched instance can contribute to the CloudWatch metrics.</p>
     pub estimated_instance_warmup: Option<i64>,
@@ -6879,10 +7051,9 @@ impl ScalingPolicyDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for SuspendProcesses and ResumeProcesses.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ScalingProcessQuery {
-    /// <p>The name or Amazon Resource Name (ARN) of the Auto Scaling group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>One or more of the following processes. If you omit this parameter, all processes are specified.</p> <ul> <li> <p> <code>Launch</code> </p> </li> <li> <p> <code>Terminate</code> </p> </li> <li> <p> <code>HealthCheck</code> </p> </li> <li> <p> <code>ReplaceUnhealthy</code> </p> </li> <li> <p> <code>AZRebalance</code> </p> </li> <li> <p> <code>AlarmNotification</code> </p> </li> <li> <p> <code>ScheduledActions</code> </p> </li> <li> <p> <code>AddToLoadBalancer</code> </p> </li> </ul>
     pub scaling_processes: Option<Vec<String>>,
@@ -6922,7 +7093,6 @@ impl ScheduledActionNamesSerializer {
     }
 }
 
-/// <p>Contains the output of DescribeScheduledActions.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ScheduledActionsType {
     /// <p>The token to use when requesting the next set of items. If there are no additional items to return, the string is empty.</p>
@@ -6981,7 +7151,7 @@ impl ScheduledActionsTypeDeserializer {
 /// <p>Describes a scheduled update to an Auto Scaling group.</p>
 #[derive(Default, Debug, Clone)]
 pub struct ScheduledUpdateGroupAction {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: Option<String>,
     /// <p>The number of instances you prefer to maintain in the group.</p>
     pub desired_capacity: Option<i64>,
@@ -7193,7 +7363,6 @@ impl SecurityGroupsSerializer {
     }
 }
 
-/// <p>Contains the parameters for SetDesiredCapacity.</p>
 #[derive(Default, Debug, Clone)]
 pub struct SetDesiredCapacityType {
     /// <p>The name of the Auto Scaling group.</p>
@@ -7230,7 +7399,6 @@ impl SetDesiredCapacityTypeSerializer {
     }
 }
 
-/// <p>Contains the parameters for SetInstanceHealth.</p>
 #[derive(Default, Debug, Clone)]
 pub struct SetInstanceHealthQuery {
     /// <p>The health status of the instance. Set to <code>Healthy</code> if you want the instance to remain in service. Set to <code>Unhealthy</code> if you want the instance to be out of service. Auto Scaling will terminate and replace the unhealthy instance.</p>
@@ -7267,7 +7435,6 @@ impl SetInstanceHealthQuerySerializer {
     }
 }
 
-/// <p>Contains the output of SetInstanceProtection.</p>
 #[derive(Default, Debug, Clone)]
 pub struct SetInstanceProtectionAnswer;
 
@@ -7287,10 +7454,9 @@ impl SetInstanceProtectionAnswerDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for SetInstanceProtection.</p>
 #[derive(Default, Debug, Clone)]
 pub struct SetInstanceProtectionQuery {
-    /// <p>The name of the group.</p>
+    /// <p>The name of the Auto Scaling group.</p>
     pub auto_scaling_group_name: String,
     /// <p>One or more instance IDs.</p>
     pub instance_ids: Vec<String>,
@@ -7794,7 +7960,6 @@ impl TagsSerializer {
     }
 }
 
-/// <p>Contains the output of DescribeTags.</p>
 #[derive(Default, Debug, Clone)]
 pub struct TagsType {
     /// <p>The token to use when requesting the next set of items. If there are no additional items to return, the string is empty.</p>
@@ -7909,7 +8074,7 @@ impl TargetGroupARNsSerializer {
 pub struct TargetTrackingConfiguration {
     /// <p>A customized metric.</p>
     pub customized_metric_specification: Option<CustomizedMetricSpecification>,
-    /// <p>If the parameter is true, then scale-in will be disabled for the target tracking policy, i.e. the target tracking policy will not scale in the Auto Scaling group. The default value is false.</p>
+    /// <p>Indicates whether scale in by the target tracking policy is disabled. If the value is <code>true</code>, scale in is disabled and the target tracking policy won't remove instances from the Auto Scaling group. Otherwise, scale in is enabled and the target tracking policy can remove instances from the Auto Scaling group. The default value is <code>false</code>.</p>
     pub disable_scale_in: Option<bool>,
     /// <p>A predefined metric. You can specify either a predefined metric or a customized metric.</p>
     pub predefined_metric_specification: Option<PredefinedMetricSpecification>,
@@ -8015,7 +8180,6 @@ impl TargetTrackingConfigurationSerializer {
     }
 }
 
-/// <p>Contains the parameters for TerminateInstanceInAutoScalingGroup.</p>
 #[derive(Default, Debug, Clone)]
 pub struct TerminateInstanceInAutoScalingGroupType {
     /// <p>The ID of the instance.</p>
@@ -8115,7 +8279,6 @@ impl TimestampTypeDeserializer {
         Ok(obj)
     }
 }
-/// <p>Contains the parameters for UpdateAutoScalingGroup.</p>
 #[derive(Default, Debug, Clone)]
 pub struct UpdateAutoScalingGroupType {
     /// <p>The name of the Auto Scaling group.</p>
@@ -8130,8 +8293,10 @@ pub struct UpdateAutoScalingGroupType {
     pub health_check_grace_period: Option<i64>,
     /// <p>The service to use for the health checks. The valid values are <code>EC2</code> and <code>ELB</code>.</p>
     pub health_check_type: Option<String>,
-    /// <p>The name of the launch configuration.</p>
+    /// <p>The name of the launch configuration. You must specify either a launch configuration or a launch template.</p>
     pub launch_configuration_name: Option<String>,
+    /// <p>The launch template to use to specify the updates. You must specify a launch configuration or a launch template.</p>
+    pub launch_template: Option<LaunchTemplateSpecification>,
     /// <p>The maximum size of the Auto Scaling group.</p>
     pub max_size: Option<i64>,
     /// <p>The minimum size of the Auto Scaling group.</p>
@@ -8194,6 +8359,13 @@ impl UpdateAutoScalingGroupTypeSerializer {
             params.put(
                 &format!("{}{}", prefix, "LaunchConfigurationName"),
                 &field_value.replace("+", "%2B"),
+            );
+        }
+        if let Some(ref field_value) = obj.launch_template {
+            LaunchTemplateSpecificationSerializer::serialize(
+                params,
+                &format!("{}{}", prefix, "LaunchTemplate"),
+                field_value,
             );
         }
         if let Some(ref field_value) = obj.max_size {
@@ -12528,7 +12700,7 @@ pub trait Autoscaling {
         &self,
     ) -> Result<DescribeTerminationPolicyTypesAnswer, DescribeTerminationPolicyTypesError>;
 
-    #[doc="<p>Removes one or more instances from the specified Auto Scaling group.</p> <p>After the instances are detached, you can manage them independently from the rest of the Auto Scaling group.</p> <p>If you do not specify the option to decrement the desired capacity, Auto Scaling launches instances to replace the ones that are detached.</p> <p>If there is a Classic Load Balancer attached to the Auto Scaling group, the instances are deregistered from the load balancer. If there are target groups attached to the Auto Scaling group, the instances are deregistered from the target groups.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/detach-instance-asg.html\">Detach EC2 Instances from Your Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>"]
+    #[doc="<p>Removes one or more instances from the specified Auto Scaling group.</p> <p>After the instances are detached, you can manage them independent of the Auto Scaling group.</p> <p>If you do not specify the option to decrement the desired capacity, Auto Scaling launches instances to replace the ones that are detached.</p> <p>If there is a Classic Load Balancer attached to the Auto Scaling group, the instances are deregistered from the load balancer. If there are target groups attached to the Auto Scaling group, the instances are deregistered from the target groups.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/detach-instance-asg.html\">Detach EC2 Instances from Your Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>"]
     fn detach_instances(
         &self,
         input: &DetachInstancesQuery,
@@ -12558,7 +12730,7 @@ pub trait Autoscaling {
         input: &EnableMetricsCollectionQuery,
     ) -> Result<(), EnableMetricsCollectionError>;
 
-    #[doc="<p>Moves the specified instances into <code>Standby</code> mode.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/AutoScalingGroupLifecycle.html\">Auto Scaling Lifecycle</a> in the <i>Auto Scaling User Guide</i>.</p>"]
+    #[doc="<p>Moves the specified instances into the standby state.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/as-enter-exit-standby.html\">Temporarily Removing Instances from Your Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>"]
     fn enter_standby(
         &self,
         input: &EnterStandbyQuery,
@@ -12567,7 +12739,7 @@ pub trait Autoscaling {
     #[doc = "<p>Executes the specified policy.</p>"]
     fn execute_policy(&self, input: &ExecutePolicyType) -> Result<(), ExecutePolicyError>;
 
-    #[doc="<p>Moves the specified instances out of <code>Standby</code> mode.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/AutoScalingGroupLifecycle.html\">Auto Scaling Lifecycle</a> in the <i>Auto Scaling User Guide</i>.</p>"]
+    #[doc="<p>Moves the specified instances out of the standby state.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/as-enter-exit-standby.html\">Temporarily Removing Instances from Your Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>"]
     fn exit_standby(&self, input: &ExitStandbyQuery)
         -> Result<ExitStandbyAnswer, ExitStandbyError>;
 
@@ -12631,7 +12803,7 @@ pub trait Autoscaling {
         input: &TerminateInstanceInAutoScalingGroupType,
     ) -> Result<ActivityType, TerminateInstanceInAutoScalingGroupError>;
 
-    #[doc="<p>Updates the configuration for the specified Auto Scaling group.</p> <p>To update an Auto Scaling group with a launch configuration with <code>InstanceMonitoring</code> set to <code>False</code>, you must first disable the collection of group metrics. Otherwise, you will get an error. If you have previously enabled the collection of group metrics, you can disable it using <a>DisableMetricsCollection</a>.</p> <p>The new settings are registered upon the completion of this call. Any launch configuration settings take effect on any triggers after this call returns. Scaling activities that are currently in progress aren't affected.</p> <p>Note the following:</p> <ul> <li> <p>If you specify a new value for <code>MinSize</code> without specifying a value for <code>DesiredCapacity</code>, and the new <code>MinSize</code> is larger than the current size of the group, we implicitly call <a>SetDesiredCapacity</a> to set the size of the group to the new value of <code>MinSize</code>.</p> </li> <li> <p>If you specify a new value for <code>MaxSize</code> without specifying a value for <code>DesiredCapacity</code>, and the new <code>MaxSize</code> is smaller than the current size of the group, we implicitly call <a>SetDesiredCapacity</a> to set the size of the group to the new value of <code>MaxSize</code>.</p> </li> <li> <p>All other optional parameters are left unchanged if not specified.</p> </li> </ul>"]
+    #[doc="<p>Updates the configuration for the specified Auto Scaling group.</p> <p>The new settings take effect on any scaling activities after this call returns. Scaling activities that are currently in progress aren't affected.</p> <p>To update an Auto Scaling group with a launch configuration with <code>InstanceMonitoring</code> set to <code>false</code>, you must first disable the collection of group metrics. Otherwise, you will get an error. If you have previously enabled the collection of group metrics, you can disable it using <a>DisableMetricsCollection</a>.</p> <p>Note the following:</p> <ul> <li> <p>If you specify a new value for <code>MinSize</code> without specifying a value for <code>DesiredCapacity</code>, and the new <code>MinSize</code> is larger than the current size of the group, we implicitly call <a>SetDesiredCapacity</a> to set the size of the group to the new value of <code>MinSize</code>.</p> </li> <li> <p>If you specify a new value for <code>MaxSize</code> without specifying a value for <code>DesiredCapacity</code>, and the new <code>MaxSize</code> is smaller than the current size of the group, we implicitly call <a>SetDesiredCapacity</a> to set the size of the group to the new value of <code>MaxSize</code>.</p> </li> <li> <p>All other optional parameters are left unchanged if not specified.</p> </li> </ul>"]
     fn update_auto_scaling_group(
         &self,
         input: &UpdateAutoScalingGroupType,
@@ -14085,7 +14257,7 @@ where
         }
     }
 
-    #[doc="<p>Removes one or more instances from the specified Auto Scaling group.</p> <p>After the instances are detached, you can manage them independently from the rest of the Auto Scaling group.</p> <p>If you do not specify the option to decrement the desired capacity, Auto Scaling launches instances to replace the ones that are detached.</p> <p>If there is a Classic Load Balancer attached to the Auto Scaling group, the instances are deregistered from the load balancer. If there are target groups attached to the Auto Scaling group, the instances are deregistered from the target groups.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/detach-instance-asg.html\">Detach EC2 Instances from Your Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>"]
+    #[doc="<p>Removes one or more instances from the specified Auto Scaling group.</p> <p>After the instances are detached, you can manage them independent of the Auto Scaling group.</p> <p>If you do not specify the option to decrement the desired capacity, Auto Scaling launches instances to replace the ones that are detached.</p> <p>If there is a Classic Load Balancer attached to the Auto Scaling group, the instances are deregistered from the load balancer. If there are target groups attached to the Auto Scaling group, the instances are deregistered from the target groups.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/detach-instance-asg.html\">Detach EC2 Instances from Your Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>"]
     fn detach_instances(
         &self,
         input: &DetachInstancesQuery,
@@ -14300,7 +14472,7 @@ where
         }
     }
 
-    #[doc="<p>Moves the specified instances into <code>Standby</code> mode.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/AutoScalingGroupLifecycle.html\">Auto Scaling Lifecycle</a> in the <i>Auto Scaling User Guide</i>.</p>"]
+    #[doc="<p>Moves the specified instances into the standby state.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/as-enter-exit-standby.html\">Temporarily Removing Instances from Your Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>"]
     fn enter_standby(
         &self,
         input: &EnterStandbyQuery,
@@ -14378,7 +14550,7 @@ where
         }
     }
 
-    #[doc="<p>Moves the specified instances out of <code>Standby</code> mode.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/AutoScalingGroupLifecycle.html\">Auto Scaling Lifecycle</a> in the <i>Auto Scaling User Guide</i>.</p>"]
+    #[doc="<p>Moves the specified instances out of the standby state.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/autoscaling/latest/userguide/as-enter-exit-standby.html\">Temporarily Removing Instances from Your Auto Scaling Group</a> in the <i>Auto Scaling User Guide</i>.</p>"]
     fn exit_standby(
         &self,
         input: &ExitStandbyQuery,
@@ -14860,7 +15032,7 @@ where
         }
     }
 
-    #[doc="<p>Updates the configuration for the specified Auto Scaling group.</p> <p>To update an Auto Scaling group with a launch configuration with <code>InstanceMonitoring</code> set to <code>False</code>, you must first disable the collection of group metrics. Otherwise, you will get an error. If you have previously enabled the collection of group metrics, you can disable it using <a>DisableMetricsCollection</a>.</p> <p>The new settings are registered upon the completion of this call. Any launch configuration settings take effect on any triggers after this call returns. Scaling activities that are currently in progress aren't affected.</p> <p>Note the following:</p> <ul> <li> <p>If you specify a new value for <code>MinSize</code> without specifying a value for <code>DesiredCapacity</code>, and the new <code>MinSize</code> is larger than the current size of the group, we implicitly call <a>SetDesiredCapacity</a> to set the size of the group to the new value of <code>MinSize</code>.</p> </li> <li> <p>If you specify a new value for <code>MaxSize</code> without specifying a value for <code>DesiredCapacity</code>, and the new <code>MaxSize</code> is smaller than the current size of the group, we implicitly call <a>SetDesiredCapacity</a> to set the size of the group to the new value of <code>MaxSize</code>.</p> </li> <li> <p>All other optional parameters are left unchanged if not specified.</p> </li> </ul>"]
+    #[doc="<p>Updates the configuration for the specified Auto Scaling group.</p> <p>The new settings take effect on any scaling activities after this call returns. Scaling activities that are currently in progress aren't affected.</p> <p>To update an Auto Scaling group with a launch configuration with <code>InstanceMonitoring</code> set to <code>false</code>, you must first disable the collection of group metrics. Otherwise, you will get an error. If you have previously enabled the collection of group metrics, you can disable it using <a>DisableMetricsCollection</a>.</p> <p>Note the following:</p> <ul> <li> <p>If you specify a new value for <code>MinSize</code> without specifying a value for <code>DesiredCapacity</code>, and the new <code>MinSize</code> is larger than the current size of the group, we implicitly call <a>SetDesiredCapacity</a> to set the size of the group to the new value of <code>MinSize</code>.</p> </li> <li> <p>If you specify a new value for <code>MaxSize</code> without specifying a value for <code>DesiredCapacity</code>, and the new <code>MaxSize</code> is smaller than the current size of the group, we implicitly call <a>SetDesiredCapacity</a> to set the size of the group to the new value of <code>MaxSize</code>.</p> </li> <li> <p>All other optional parameters are left unchanged if not specified.</p> </li> </ul>"]
     fn update_auto_scaling_group(
         &self,
         input: &UpdateAutoScalingGroupType,
