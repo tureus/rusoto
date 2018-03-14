@@ -129,7 +129,7 @@ pub fn generate_services(services: &BTreeMap<String, ServiceConfig>, out_dir: &P
             dev_dependencies: vec![
                 ("rusoto_mock".to_owned(), cargo::Dependency::Extended {
                     path: Some("../../../mock".into()),
-                    version: Some("0.25.0".into()),
+                    version: Some("0.26.0".into()),
                     optional: None,
                     default_features: None,
                     features: None
@@ -231,6 +231,7 @@ See [LICENSE][license] for details.
 //
 // =================================================================
 
+#![doc(html_logo_url = "https://raw.githubusercontent.com/rusoto/rusoto/master/assets/logo-square.png")]
 {service_docs}
 //!
 //! If you're using the service, you're probably looking for [{client_name}](struct.{client_name}.html) and [{trait_name}](trait.{trait_name}.html).
