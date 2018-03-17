@@ -31,20 +31,25 @@ use super::{
 };
 
 lazy_static! {
-    static ref DEFAULT_REACTOR: Reactor = {
+    /// Hey
+    pub static ref DEFAULT_REACTOR: Reactor = {
         Reactor::spawn().expect("failed to spawn default reactor")
     };
 }
 
-struct Reactor {
-    remote: Remote
+/// Hey
+pub struct Reactor {
+    /// Hey again
+    pub remote: Remote
 }
 
 impl Reactor {
     fn spawn() -> IoResult<Reactor> {
         let (init_tx, init_rx) = oneshot::channel();
 
-        thread::spawn(move || {
+        let build = thread::Builder::new()
+                                    .name("rusoto-default-reactor".into());
+        build.spawn(move || {
             let mut core = match Core::new() {
                 Ok(core) => {
                     if let Err(_) = init_tx.send(Ok(core.remote())) {
